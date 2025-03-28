@@ -1,0 +1,257 @@
+/* extra small mobile */
+@media (max-width: 480px) {
+   .product-name{
+    margin-bottom: 10px;
+   }
+   .product-category{
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
+    border: 1px solid rgb(190, 185, 185);
+   }
+   .product-brand{
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
+    border: 1px solid gray;
+   }
+   .product-image{
+    margin-bottom: 10px;
+   }
+   .product-image input:focus{
+    outline: none;
+   }
+   .product-price{
+    margin-bottom: 10px;
+   }
+   .pencil{
+    color: black;
+   }
+   .trash{
+    color: black;
+   }
+   .table_img{
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+   }
+   .edit_product_image{
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    margin-top: 10px;
+   }
+   .main-text{
+    color: black;
+    font-size: 25px;
+    font-weight:600;
+   }
+  }
+
+/* mobile */
+
+@media (min-width: 481px) and (max-width: 768px) {
+    .product-name{
+        margin-bottom: 10px;
+       }
+       .product-category{
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgb(190, 185, 185);
+       }
+       .product-brand{
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgb(190, 185, 185);
+       }
+       .product-image{
+        margin-bottom: 10px;
+       }
+       .product-image input:focus{
+        outline: none;
+       }
+       .product-price{
+        margin-bottom: 10px;
+       }
+       .pencil{
+        color: black;
+       }
+       .trash{
+        color: black;
+       }
+       .table_img{
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+       }
+       .edit_product_image{
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+        margin-top: 10px;
+       }
+       .main-text{
+        color: black;
+        font-size: 25px;
+        font-weight:600;
+       }
+}
+
+/* tablet */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .product-name{
+        margin-bottom: 10px;
+       }
+       .product-category{
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgb(190, 185, 185);
+
+       }
+       .product-brand{
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgb(190, 185, 185);
+       }
+       .product-image{
+        margin-bottom: 10px;
+       }
+       .product-image input:focus{
+        outline: none;
+       }
+       .product-price{
+        margin-bottom: 10px;
+       }
+       .pencil{
+        color: black;
+       }
+       .trash{
+        color: black;
+       }
+       .table_img{
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+       }
+       .edit_product_image{
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        margin-top: 10px;
+       }
+       .main-text{
+        color: black;
+        font-size: 25px;
+        font-weight:600;
+       }
+}
+/* desktop */
+
+@media (min-width: 1025px) and (max-width: 1200px) {
+    .product-name{
+        margin-bottom: 10px;
+       }
+       .product-category{
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgb(190, 185, 185);
+
+       }
+       .product-brand{
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgb(190, 185, 185);
+
+       }
+       .product-image{
+        margin-bottom: 10px;
+       }
+       .product-image input:focus{
+        outline: none;
+       }
+       .product-price{
+        margin-bottom: 10px;
+       }
+       .pencil{
+        color: black;
+       }
+       .trash{
+        color: black;
+       }
+       .table_img{
+        width: 70px;
+        height: 70px;
+        object-fit: contain;
+       }
+       .edit_product_image{
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        margin-top: 10px;
+       }
+       .main-text{
+        color: black;
+        font-size: 25px;
+        font-weight:600;
+       }
+}
+
+/* laptops */
+
+@media (min-width: 1201px) { 
+    .product-name{
+        margin-bottom: 10px;
+       }
+       .product-category{
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgb(190, 185, 185);
+       }
+       .product-brand{
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgb(190, 185, 185);
+       }
+       .product-image{
+        margin-bottom: 10px;
+       }
+       .product-image input:focus{
+        outline: none;
+       }
+       .product-price{
+        margin-bottom: 10px;
+       }
+       .pencil{
+        color: black;
+        font-size: 20px;
+       }
+       .trash{
+        color: black;
+        font-size: 20px;
+       }
+       .table_img{
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+       }
+       .edit_product_image{
+        width: 70px;
+        height: 70px;
+        object-fit: contain;
+        margin-top: 10px;
+       }
+       .main-text{
+        color: black;
+        font-size: 25px;
+        font-weight:600;
+       }
+ }
