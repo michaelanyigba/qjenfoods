@@ -13,19 +13,43 @@ if(isset($_POST['register_user'])){
     $user_phone_number= $_POST['user_phone_number'];
     $user_ip = getIPAddress();
 
+    if($user_username ==''){
+        $_SESSION['message'] = "Username field cannot be empty!";
+        $_SESSION['msg_type'] = "error"; // For error messages
+    }elseif($user_email ==''){
+        $_SESSION['message'] = "Email field cannot be empty!";
+        $_SESSION['msg_type'] = "error"; // For error messages
+    }elseif($user_address==''){
+        $_SESSION['message'] = "Address field cannot be empty!";
+        $_SESSION['msg_type'] = "error"; // For error messages
+    }elseif($user_phone_number==''){
+        $_SESSION['message'] = "Phone number field cannot be empty!";
+        $_SESSION['msg_type'] = "error"; // For error messages
 
-    // select query
-    $select_query = "Select * from `users` where username='$user_username' or user_email='$user_email'";
+    }elseif($user_password==''){
+        $_SESSION['message'] = "Password field cannot be empty!";
+        $_SESSION['msg_type'] = "error"; // For error messages
+    }elseif($user_password==''){
+        $_SESSION['message'] = "Confirm password field cannot be empty!";
+        $_SESSION['msg_type'] = "error"; // For error messages
+    }
+    else{
+         // select query
+    $select_query = "Select * from `users` where username='$user_username' and user_email='$user_email'";
     $result = mysqli_query($con, $select_query);
     $rows_count= mysqli_num_rows($result);
     if($rows_count>0){
         echo "<script>alert('Username or email already exist')</script>";
+        $_SESSION['message'] = "Username or email already exist!";
+        $_SESSION['msg_type'] = "error"; // For error messages
+        // header("Location: user_register.php"); // Redirect back to register
+        // exit();
     }elseif($user_password!=$conf_user_password){
         echo "<script>alert('Password do not match')</script>";
   
     }else{
    // insert query
-   $insert_query= "insert into `users` (username, user_email, user_password, user_ip, user_address, user_phone_number) values ('$user_username', '$user_email', '$hash_password', '$user_ip', '$user_address', '$user_phone_number')";
+   $insert_query= "insert into `users` (username, user_email, user_password, user_ip, user_address, user_phone_number, role) values ('$user_username', '$user_email', '$hash_password', '$user_ip', '$user_address', '$user_phone_number', 'user')";
    $sql_execute= mysqli_query($con, $insert_query);
    if($sql_execute){
        echo "<script>alert('You have been registered successfully!')</script>";
@@ -40,11 +64,23 @@ if(isset($_POST['register_user'])){
     $rows_count = mysqli_num_rows($result_cart);
     if($rows_count>0){
         $_SESSION['username'] = $user_username;
-        echo "<script>alert('You have items in your cart')</script>";
-        echo "<script>window.open('checkout.php', '_self')</script>";
+        $_SESSION['message'] = "You have items in your cart!";
+        $_SESSION['msg_type'] = "success";
+        header("Location: checkout.php");
+        exit();
+        // echo "<script>alert('You have items in your cart')</script>";
+        // echo "<script>window.open('checkout.php', '_self')</script>";
     }else{
-        echo "<script>window.open('../index.php', '_self')</script>"; 
+        // echo "<script>window.open('user_register.php', '_self')</script>"; 
+        header("Location: user_register.php"); // Redirect back to register
+        exit();
+
     }
+
+    }
+
+
+   
 
  
 }
@@ -77,6 +113,25 @@ if(isset($_POST['register_user'])){
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
 </head>
 
 <body>
@@ -167,6 +222,12 @@ if(isset($_POST['register_user'])){
             <div class="col-md-6 col-lg-7 d-flex align-items-center">
               <div class="card-body p-4 p-lg-5 text-black">
               <h5 class="fw-normal mb-2 pb-2" style="letter-spacing: 1px;">Register your account</h5>
+              <?php
+                    if (isset($_SESSION['message'])) {
+                        echo "<div class='message {$_SESSION['msg_type']}'>" . $_SESSION['message'] . "</div>";
+                        unset($_SESSION['message']); // Remove message after displaying it
+                    }
+                    ?>
 
                 <form method="post" autocomplete="off">
                   <div data-mdb-input-init class="form-outline mb-2">

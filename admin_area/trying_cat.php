@@ -221,48 +221,44 @@ $user_id = $user_row['user_id'];
                             </div>
                             <div class="tab-pane fade" id="my-orders" role="tabpanel" aria-labelledby="my-orders-tab">
                             <table class="table table-responsive">
-
-                            <?php
-                             $order_query = "Select * from user_orders where user_id =$user_id ORDER BY order_date DESC";
-                             $order_result = mysqli_query($con, $order_query);
-                             if(mysqli_num_rows($order_result)==0){
-                                echo "<div class='text-dark text-center m-3'>You have no orders yet</div>";
-
-
-                             }else{
-                                echo "<thead>
-                                    <tr class='text-center'>
-                                    <th scope='col'>Order Id</th>
-                                    <th scope='col'>Total products</th>
-                                    <th scope='col'>Total price</th>
-                                    <th scope='col'>Date</th>
-                                    <th scope='col'>Status</th>
-                                    <th scope='col'>Action</th>
+                                <thead>
+                                    <tr class="text-center">
+                                    <th scope="col">Order Id</th>
+                                    <th scope="col">Invoice number</th>
+                                    <th scope="col">Total products</th>
+                                    <th scope="col">Total price</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>";
-                            while($order_row= mysqli_fetch_assoc($order_result)){
-                                $total_price = $order_row['total_price'];
-                                $status = $order_row['status'];
-                                $total_products = $order_row['total_products'];
-                                $order_date = $order_row['order_date'];
-                                $order_id = $order_row['order_id'];
-                                echo "<tr>
-                            <th scope='row' class='text-center'><span>#</span>$order_id</th>
-                            <td class='text-center'>$total_products</td>
-                            <td class='text-center'>$total_price</td>
-                            <td class='text-center'>$order_date</td>
-                            <td class='text-center'>$status</td>
-                            <td class='text-center'><a href='user_order_details.php?order_id=$order_id'>View</a></td>
-                            </tr>";
-                            }
-                             }
-
+                                    <tbody>
+                                        <?php
+                                        $order_query = "Select * from user_orders where user_id =$user_id";
+                                        $order_result = mysqli_query($con, $order_query);
+                                        if(mysqli_num_rows($order_result)>0){
+                                            while($order_row= mysqli_fetch_assoc($order_result)){
+                                                $total_price = $order_row['total_price'];
+                                                $invoice_number = $order_row['invoice_number'];
+                                                $total_products = $order_row['total_products'];
+                                                $order_date = $order_row['order_date'];
+                                                $order_id = $order_row['order_id'];
+                                                echo "<tr>
+                                            <th scope='row' class='text-center'><span>#</span>$order_id</th>
+                                            <td class='text-center'>$invoice_number</td>
+                                            <td class='text-center'>$total_products</td>
+                                            <td class='text-center'>$total_price</td>
+                                            <td class='text-center'>$order_date</td>
+                                            <td class='text-center'><a href='user_order_details.php?order_id=$order_id'>View</a></td>
+                                            </tr>";
+                                            }
+                                        }else{
+                                            echo "no order";
+                                        }
                                       
-                            ?>
+                                        ?>
                                     
-                            </tbody>
-                            </table>
+                                    </tbody>
+                                    </table>
                             </div>
                         </div>
                     </div>

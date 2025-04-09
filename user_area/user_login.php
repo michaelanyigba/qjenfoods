@@ -22,7 +22,10 @@ if(isset($_POST['user_login'])){
     $result= mysqli_query($con, $select_query);
     $row_count= mysqli_num_rows($result);
     $row_data = mysqli_fetch_assoc($result);
-    $user_username = $row_data['username'];
+    
+    $username = $row_data['username'];
+    $user_role = $row_data['role'];
+    
     // echo $user_username;
     // $user_ip = getIPAddress();
 
@@ -32,26 +35,40 @@ if(isset($_POST['user_login'])){
     $row_count_cart= mysqli_num_rows($select_cart);
 
     if($row_count>0){
-        $_SESSION['username']= $user_username;
         if(password_verify($user_password, $row_data['user_password'])){
             // echo "<script>alert('Login successful')</script>";
             if($row_count ==1 and $row_count_cart==0){
-                $_SESSION['username']= $user_username;
-            echo "<script>alert('Login successful')</script>";
-            echo "<script>window.open('../index.php', '_self')</script>";
+                // $_SESSION['username']= $user_username;
+                // $_SESSION['message'];
+                $_SESSION['message'] = "Login successful";
+                $_SESSION['msg_type'] = "success";
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = $user_role;
+                header("Location: success.php");
+                exit();
 
             }else{
                 $_SESSION['username']= $user_username;
-                echo "<script>alert('Login successful')</script>";
-                echo "<script>window.open('cart.php', '_self')</script>";
+                $_SESSION['message'] = "Login successful!";
+                $_SESSION['msg_type'] = "success";
+                header("Location: cart.php");
+                exit();
             }
 
         }else{
-            echo "<script>alert('Invalid Credentials')</script>";
+            $_SESSION['message'] = "Invalid username or password!";
+            $_SESSION['msg_type'] = "error"; // For error messages
+            header("Location: user_login.php"); // Redirect back to login page
+            exit();
+
         }
 
     }else{
-        echo "<script>alert('Invalid Credentials')</script>";
+        $_SESSION['message'] = "Invalid username or password!";
+        $_SESSION['msg_type'] = "error"; // For error messages
+        header("Location: user_login.php"); // Redirect back to login page
+        exit();
+
     }
 }
 
@@ -83,6 +100,26 @@ if(isset($_POST['user_login'])){
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
+
+    <style>
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
 </head>
 
 <body>
@@ -177,6 +214,12 @@ if(isset($_POST['user_login'])){
                 <form method="post">
 
                   <h5 class="fw-normal mb-2 pb-2" style="letter-spacing: 1px;">Sign into your account</h5>
+                    <?php
+                    if (isset($_SESSION['message'])) {
+                        echo "<div class='message {$_SESSION['msg_type']}'>" . $_SESSION['message'] . "</div>";
+                        unset($_SESSION['message']); // Remove message after displaying it
+                    }
+                    ?>
 
                   <div data-mdb-input-init class="form-outline mb-2">
                   <label class="form-label">Email address</label>
@@ -192,7 +235,7 @@ if(isset($_POST['user_login'])){
                     <button data-mdb-button-init data-mdb-ripple-init class="btn btn-dark btn-lg btn-block" name="user_login" type="submit">Login</button>
                   </div>
 
-                  <a class="small text-muted" href="#!">Forgot password?</a>
+                  <a class="small text-muted" href="password_reset.php">Forgot password?</a>
                   <p class="mb-5 pb-lg-2" style="color: #393f81;">Don't have an account? <a href="user_register.php"
                       style="color: #393f81;">Register here</a></p>
                 </form>
@@ -209,14 +252,13 @@ if(isset($_POST['user_login'])){
     <!-- Checkout End -->
 
 
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
+   <!-- Footer Start -->
+   <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
-                <p class="mb-4">No dolore ipsum accusam no lorem. Invidunt sed clita kasd clita et et dolor sed dolor. Rebum tempor no vero est magna amet no</p>
-                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
+                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, Accra, Ghana</p>
+                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>qjen@example.com</p>
                 <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
             </div>
             <div class="col-lg-8 col-md-12">
@@ -224,36 +266,20 @@ if(isset($_POST['user_login'])){
                     <div class="col-md-4 mb-5">
                         <h5 class="text-secondary text-uppercase mb-4">Quick Shop</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="./../index.php"><i class="fa fa-angle-right mr-2"></i>Home</a>
+                            <a class="text-secondary mb-2" href="shop.php"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
+                            <a class="text-secondary mb-2" href="cart.php"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
+                            <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-5">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Orders</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-5">
-                        <h5 class="text-secondary text-uppercase mb-4">Newsletter</h5>
-                        <p>Duo stet tempor ipsum sit amet magna ipsum tempor est</p>
-                        <form action="">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Your Email Address">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary">Sign Up</button>
-                                </div>
-                            </div>
-                        </form>
                         <h6 class="text-secondary text-uppercase mt-4 mb-3">Follow Us</h6>
                         <div class="d-flex">
                             <a class="btn btn-primary btn-square mr-2" href="#"><i class="fab fa-twitter"></i></a>
@@ -266,15 +292,8 @@ if(isset($_POST['user_login'])){
             </div>
         </div>
         <div class="row border-top mx-xl-5 py-4" style="border-color: rgba(256, 256, 256, .1) !important;">
-            <div class="col-md-6 px-xl-0">
-                <p class="mb-md-0 text-center text-md-left text-secondary">
-                    &copy; <a class="text-primary" href="#">Domain</a>. All Rights Reserved. Designed
-                    by
-                    <a class="text-primary" href="https://htmlcodex.com">HTML Codex</a>
-                </p>
-            </div>
             <div class="col-md-6 px-xl-0 text-center text-md-right">
-                <img class="img-fluid" src="img/payments.png" alt="">
+                <!-- <img class="img-fluid" src="img/payments.png" alt=""> -->
             </div>
         </div>
     </div>

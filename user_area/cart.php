@@ -63,10 +63,7 @@ if(isset($_GET['remove'])){
         <div class="row bg-secondary py-1 px-xl-5">
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="d-inline-flex align-items-center h-100">
-                    <a class="text-body mr-3" href="">About</a>
-                    <a class="text-body mr-3" href="">Contact</a>
-                    <a class="text-body mr-3" href="">Help</a>
-                    <a class="text-body mr-3" href="">FAQs</a>
+                    <!-- <a class="text-body mr-3" href="">About</a> -->
                 </div>
             </div>
             <div class="col-lg-6 text-center text-lg-right">
@@ -79,7 +76,6 @@ if(isset($_GET['remove'])){
                                 echo "<a href='user_login.php'> <button class='dropdown-item' type='button'>Login</button></a>";
                                 echo "<a href='user_register.php'><button class='dropdown-item' type='button'>Register</button></a> ";
                             }else{
-                                echo "<p class='dropdown-item'>".$_SESSION['username']."</p>";
                                 echo "<a href='profile.php'> <button class='dropdown-item'>My profile</button></a>";
 
                             }
@@ -158,15 +154,13 @@ if(isset($_GET['remove'])){
                         <div class="navbar-nav mr-auto py-0">
                             <a href="../index.php" class="nav-item nav-link">Home</a>
                             <a href="shop.php" class="nav-item nav-link">Shop</a>
-                            <a href="detail.php" class="nav-item nav-link">Shop Detail</a>
-                            <div class="nav-item dropdown">
+                            <!-- <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages <i class="fa fa-angle-down mt-1"></i></a>
                                 <div class="dropdown-menu bg-primary rounded-0 border-0 m-0">
                                     <a href="cart.php" class="dropdown-item active">Shopping Cart</a>
-                                    <a href="checkout.php" class="dropdown-item">Checkout</a>
                                 </div>
-                            </div>
-                            <a href="contact.html" class="nav-item nav-link">Contact</a>
+                            </div> -->
+                            <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                         <div class="navbar-nav ml-auto py-0 d-none d-lg-block">
                             <a href="" class="btn px-0 ml-3">
@@ -206,7 +200,6 @@ if(isset($_GET['remove'])){
                 <?php
                   global $con;
                   $get_ip_add = getIPAddress();
-                  $all_total = 0;
                   $total_price = 0;
                   $cart_query= "Select * from `cart_details` where ip_address='$get_ip_add'";
                   $result = mysqli_query($con, $cart_query);
@@ -236,10 +229,8 @@ if(isset($_GET['remove'])){
                           $product_title= $row_product_price['product_title'];
                           $product_image1= $row_product_price['product_image1'];
                           $product_values = array_sum($product_price);
-                          $total_price +=$product_values;
                           $product_row_price = $price_table * $quantity;
-                        //   $all_total = $product_row_price;
-                          $all_total += $product_row_price;
+                          $total_price += $product_row_price;
                     ?>
                     
                         <tr>
@@ -283,8 +274,7 @@ if(isset($_GET['remove'])){
                     <div class="pt-2">
                         <div class="d-flex justify-content-between mt-2">
                             <h5>Total</h5>
-                            <!-- <h5>$<?php echo $total_price?></h5> -->
-                            <h5 id="totalPrice">$<?php echo $all_total?></h5>
+                            <h5 id="totalPrice">$<?php echo $total_price?></h5>
                         </div>
                         <?php
                    $get_ip_add = getIPAddress();
@@ -313,9 +303,8 @@ if(isset($_GET['remove'])){
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
-                <p class="mb-4">No dolore ipsum accusam no lorem. Invidunt sed clita kasd clita et et dolor sed dolor. Rebum tempor no vero est magna amet no</p>
-                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
+                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, Accra, Ghana</p>
+                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>qjen@example.com</p>
                 <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
             </div>
             <div class="col-lg-8 col-md-12">
@@ -323,36 +312,20 @@ if(isset($_GET['remove'])){
                     <div class="col-md-4 mb-5">
                         <h5 class="text-secondary text-uppercase mb-4">Quick Shop</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="./../index.php"><i class="fa fa-angle-right mr-2"></i>Home</a>
+                            <a class="text-secondary mb-2" href="shop.php"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
+                            <a class="text-secondary mb-2" href="cart.php"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
+                            <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-5">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Orders</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-5">
-                        <h5 class="text-secondary text-uppercase mb-4">Newsletter</h5>
-                        <p>Duo stet tempor ipsum sit amet magna ipsum tempor est</p>
-                        <form action="">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Your Email Address">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary">Sign Up</button>
-                                </div>
-                            </div>
-                        </form>
                         <h6 class="text-secondary text-uppercase mt-4 mb-3">Follow Us</h6>
                         <div class="d-flex">
                             <a class="btn btn-primary btn-square mr-2" href="#"><i class="fab fa-twitter"></i></a>
@@ -365,15 +338,8 @@ if(isset($_GET['remove'])){
             </div>
         </div>
         <div class="row border-top mx-xl-5 py-4" style="border-color: rgba(256, 256, 256, .1) !important;">
-            <div class="col-md-6 px-xl-0">
-                <p class="mb-md-0 text-center text-md-left text-secondary">
-                    &copy; <a class="text-primary" href="#">Domain</a>. All Rights Reserved. Designed
-                    by
-                    <a class="text-primary" href="https://htmlcodex.com">HTML Codex</a>
-                </p>
-            </div>
             <div class="col-md-6 px-xl-0 text-center text-md-right">
-                <img class="img-fluid" src="img/payments.png" alt="">
+                <!-- <img class="img-fluid" src="img/payments.png" alt=""> -->
             </div>
         </div>
     </div>

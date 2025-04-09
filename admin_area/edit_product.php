@@ -80,7 +80,7 @@ if(isset($_GET['edit_product'])){
             font-size: 16px;
           "
         >
-          <a href="#" class="btn btn-danger square-btn-adjust">Logout</a>
+          <a href="logout.php" class="btn btn-danger square-btn-adjust">Logout</a>
         </div>
       </nav>
       <!-- /. NAV TOP  -->
@@ -130,13 +130,23 @@ if(isset($_GET['edit_product'])){
               >
             </li>
             <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+              <a href="processing_order.php"
+                ><i class="fa fa-bar-chart-o fa-3x"></i> Processing Orders</a
               >
             </li>
             <li>
-              <a href="table.php"
-                ><i class="fa fa-table fa-3x"></i> Table Examples</a
+              <a href="delivered_order.php"
+                ><i class="fa fa-truck fa-3x" aria-hidden="true"></i> Delivered Orders</a
+              >
+            </li>
+            <li>
+              <a class="active-menu" href="cancelled_order.php"
+                ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
+              >
+            </li>
+            <li>
+              <a href="view_user.php"
+                ><i class="fa fa-rocket fa-3x"></i> View Users</a
               >
             </li>
             <li>

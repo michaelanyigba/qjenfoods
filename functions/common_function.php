@@ -20,7 +20,7 @@ function get_products(){
      echo "<div class='col-lg-3 col-md-4 col-sm-6 pb-1'>
                 <div class='product-item bg-light mb-4'>
                     <div class='product-img position-relative overflow-hidden'>
-                        <img class='img-fluid w-100' src='./admin_area/product_images/$product_image1' alt=''>
+                        <img class='img-fluid w-80' src='./admin_area/product_images/$product_image1' alt=''>
                         <div class='product-action'>
                             <a class='btn btn-outline-dark btn-square' href='index.php?add_to_cart=$product_id'><i class='fa fa-shopping-cart'></i></a>
                             <a class='btn btn-outline-dark btn-square' href='./user_area/detail.php?product_id=$product_id'><i class='fa fa-info-circle'></i></a>
@@ -38,6 +38,38 @@ function get_products(){
     }
   }
 }
+}
+
+// function for related products
+
+function get_related_products(){
+    if(isset($_GET['product_id'])){
+        global $con;
+        $product_id = $_GET['product_id'];
+      $select_query="SELECT * FROM `products` WHERE category_id = (SELECT category_id FROM `products` WHERE product_id = $product_id) AND product_id != $product_id limit 0,8";
+        $result = mysqli_query($con, $select_query);
+        while($result_row = mysqli_fetch_assoc($result)){
+            $product_title = $result_row['product_title'];
+            $product_price = $result_row['product_price'];
+            $product_image = $result_row['product_image1'];
+            echo " <div class='product-item bg-light'>
+                        <div class='product-img position-relative overflow-hidden'>
+                            <img class='img-fluid w-60' src='../admin_area/product_images/$product_image' alt=''>
+                            <div class='product-action'>
+                              <a class='btn btn-outline-dark btn-square' href='shop.php?add_to_cart_for_user=$product_id'><i class='fa fa-shopping-cart'></i></a>
+                            </div>
+                        </div>
+                        <div class='text-center py-4'>
+                            <a class='h6 text-decoration-none text-truncate' href=''>$product_title</a>
+                            <div class='d-flex align-items-center justify-content-center mt-2'>
+                                <h5>$$product_price</h5><h6 class='text-muted ml-2'></h6>
+                            </div>
+                        </div>
+                    </div>";
+        }
+    
+     }
+    
 }
 
 // function for categories for index
@@ -66,6 +98,7 @@ while( $row_data= mysqli_fetch_assoc($result_categories)){
 // product details
 function product_details(){
     global $con;
+    $category_title = [];
     if(isset($_GET['product_id'])){
     $product_id = $_GET['product_id'];
     $select_query = "Select * from `products` where product_id=$product_id";
@@ -79,19 +112,23 @@ function product_details(){
      $product_image3 = $row['product_image3'];
      $product_price = $row['product_price'];
      $category_id = $row['category_id'];
+     $category_query = "Select * from `categories` where category_id = $category_id";
+     $category_result = mysqli_query($con, $category_query);
+     $category_row = mysqli_fetch_array($category_result);
+     $category_title = $category_row['category_title'];
      $brand_id = $row['brand_id'];
-     echo "<div class='row px-xl-5'>
-            <div class='col-lg-5 mb-30'>
+     echo "<div class='row px-xl-5 d-flex justify-content-center'>
+            <div class='col-lg-4 mb-30'>
                 <div id='product-carousel' class='carousel slide' data-ride='carousel'>
                     <div class='carousel-inner bg-light'>
                         <div class='carousel-item active'>
-                            <img class='w-100 h-100' src='../admin_area/product_images/$product_image1' alt='Image'>
+                            <img class='w-100 h-80' src='../admin_area/product_images/$product_image1' alt='Image'>
                         </div>
                         <div class='carousel-item'>
-                            <img class='w-100 h-100' src='../admin_area/product_images/$product_image2' alt='Image'>
+                            <img class='w-100 h-80' src='../admin_area/product_images/$product_image2' alt='Image'>
                         </div>
                         <div class='carousel-item'>
-                            <img class='w-100 h-100' src='../admin_area/product_images/$product_image3' alt='Image'>
+                            <img class='w-100 h-80' src='../admin_area/product_images/$product_image3' alt='Image'>
                         </div>
                     </div>
                     <a class='carousel-control-prev' href='#product-carousel' data-slide='prev'>
@@ -104,9 +141,11 @@ function product_details(){
             </div>
             <div class='col-lg-7 h-auto mb-30'>
                 <div class='h-100 bg-light p-30'>
-                    <h3>Name: $product_title</h3>
-                    <h3 class='font-weight-semi-bold mb-4'> <span class='detail_price'> Price:</span> $$product_price</h3>
-                    <p class='mb-4'>$product_description</p>
+                    <p><span class='text-dark'>Name:</span> $product_title</p>
+                    <p class='mb-4'><span class='text-dark'>Description:</span> $product_description</p>
+                    <p class='mb-4'><span class='text-dark'>Category:</span> $category_title</p>
+                    <p class='font-weight-semi-bold mb-4'><span class='text-dark'>Price:</span> $$product_price</p>
+
                     <div class='d-flex align-items-center mb-4 pt-2'>
                         <a href='detail.php?add_to_cart_for_user=$product_id' class='btn btn-primary px-3'><i class='fa fa-shopping-cart mr-1'></i> Add To
                             Cart</a>
@@ -135,10 +174,10 @@ function get_all_products(){
      $product_price = $row['product_price'];
      $category_id = $row['category_id'];
      $brand_id = $row['brand_id'];
-     echo "<div class='col-lg-4 col-md-6 col-sm-6 pb-1'>
+     echo "<div class='col-lg-3 col-md-6 col-sm-6 pb-1'>
                         <div class='product-item bg-light mb-4'>
                             <div class='product-img position-relative overflow-hidden'>
-                                <img class='img-fluid w-100' src='../admin_area/product_images/$product_image1' alt=''>
+                                <img class='img-fluid w-80' src='../admin_area/product_images/$product_image1' alt=''>
                                 <div class='product-action'>
                                     <a class='btn btn-outline-dark btn-square' href='shop.php?add_to_cart_for_user=$product_id'><i class='fa fa-shopping-cart'></i></a>
                                     <a class='btn btn-outline-dark btn-square' href='detail.php?product_id=$product_id'><i class='fa fa-info-circle'></i></a>
@@ -179,7 +218,7 @@ function get_all_categories(){
      $product_price = $row['product_price'];
      $category_id = $row['category_id'];
      $brand_id = $row['brand_id'];
-     echo "<div class='col-lg-4 col-md-6 col-sm-6 pb-1'>
+     echo "<div class='col-lg-3 col-md-6 col-sm-6 pb-1'>
                         <div class='product-item bg-light mb-4'>
                             <div class='product-img position-relative overflow-hidden'>
                                 <img class='img-fluid w-100' src='../admin_area/product_images/$product_image1' alt=''>
@@ -220,7 +259,7 @@ function search_product_for_index(){
      $product_price = $row['product_price'];
      $category_id = $row['category_id'];
      $brand_id = $row['brand_id'];
-     echo "<div class='col-lg-4 col-md-6 col-sm-6 pb-1'>
+     echo "<div class='col-lg-3 col-md-6 col-sm-6 pb-1'>
                         <div class='product-item bg-light mb-4'>
                             <div class='product-img position-relative overflow-hidden'>
                                 <img class='img-fluid w-100' src='../admin_area/product_images/$product_image1' alt=''>

@@ -93,7 +93,7 @@ if(isset($_POST['insert_product'])){
             font-size: 16px;
           "
         >
-          <a href="#" class="btn btn-danger square-btn-adjust">Logout</a>
+          <a href="logout.php" class="btn btn-danger square-btn-adjust">Logout</a>
         </div>
       </nav>
       <!-- /. NAV TOP  -->
@@ -143,53 +143,23 @@ if(isset($_POST['insert_product'])){
               >
             </li>
             <li>
+              <a href="processing_order.php"
+                ><i class="fa fa-suitcase fa-3x" aria-hidden="true"></i> Processing orders</a
+              >
+            </li>
+            <li>
+              <a href="delivered_order.php"
+                ><i class="fa fa-truck fa-3x" aria-hidden="true"></i> Delivered Orders</a
+              >
+            </li>
+            <li>
+              <a class="" href="cancelled_order.php"
+                ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
+              >
+            </li>
+            <li>
               <a href="view_user.php"
                 ><i class="fa fa-rocket fa-3x"></i> View Users</a
-              >
-            </li>
-            <li>
-              <a href="table.php"
-                ><i class="fa fa-table fa-3x"></i> Table Examples</a
-              >
-            </li>
-            <li>
-              <a href="form.php"><i class="fa fa-edit fa-3x"></i> Forms </a>
-            </li>
-
-            <li>
-              <a href="#"
-                ><i class="fa fa-sitemap fa-3x"></i> Multi-Level Dropdown<span
-                  class="fa arrow"
-                ></span
-              ></a>
-              <ul class="nav nav-second-level">
-                <li>
-                  <a href="#">Second Level Link</a>
-                </li>
-                <li>
-                  <a href="#">Second Level Link</a>
-                </li>
-                <li>
-                  <a href="#"
-                    >Second Level Link<span class="fa arrow"></span
-                  ></a>
-                  <ul class="nav nav-third-level">
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a href="blank.php"
-                ><i class="fa fa-square-o fa-3x"></i> Blank Page</a
               >
             </li>
           </ul>

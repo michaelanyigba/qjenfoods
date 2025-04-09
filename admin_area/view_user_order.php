@@ -2,6 +2,15 @@
 
 include("../includes/connect.php");
 
+if(isset($_GET['user_id'])){
+    $user_id = $_GET['user_id'];
+
+    $select_user_query = "Select * from `users` where user_id = '$user_id'";
+    $select_result = mysqli_query($con, $select_user_query);
+    $select_user_row = mysqli_fetch_assoc($select_result);
+    $username = $select_user_row['username'];
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -129,8 +138,7 @@ include("../includes/connect.php");
         <div id="page-inner">
           <div class="row">
             <div class="col-md-12">
-              <h2>View Users</h2>
-              <h5>Love to see you.</h5>
+              <h2><?php echo $username?>'s Order</h2>
             </div>
           </div>
           <!-- /. ROW  -->
@@ -139,7 +147,7 @@ include("../includes/connect.php");
           <!-- start coding from here -->
           <div class="col-md-9 col-sm-12 col-xs-12">
             <div class="panel panel-default">
-              <div class="panel-heading">All Users</div>
+              <div class="panel-heading">All orders</div>
               <div class="panel-body">
                 <div class="table-responsive">
                   <table
@@ -149,37 +157,37 @@ include("../includes/connect.php");
                                 
                                 
                                 // fetching of orders
-                                $user_sql = "Select * from `users` where role != 'admin'";
-                                $user_result = mysqli_query($con, $user_sql);
-                                if(mysqli_num_rows($user_result)==0){
-                                  echo "<div class='text-center text-danger'>No users yet!</div>";
+                                $user_order_sql = "Select * from `user_orders` where user_id = '$user_id'";
+                                $user_order_result = mysqli_query($con, $user_order_sql);
+                                if(mysqli_num_rows($user_order_result)==0){
+                                  echo "<div class='text-center text-danger'>This user does not have an order yet!</div>";
                                 }else{
                                   echo "  <thead>
                                   <tr>
-                                      <th class='text-center'>Username</th>
-                                      <th class='text-center'>Email</th>
-                                      <th class='text-center'>Address</th>
-                                      <th class='text-center'>Phone number</th>
-                                      <th class='text-center'>Action</th>
+                                      <th class='text-center'>Order id</th>
+                                      <th class='text-center'>Total products</th>
+                                      <th class='text-center'>Total price</th>
+                                      <th class='text-center'>Date</th>
+                                      <th class='text-center'>Status</th>
                                   </tr>
                               </thead>";
                                 
-                                  while($user_row = mysqli_fetch_assoc($user_result)){
-                                    $user_id = $user_row['user_id'];
-                                    $username = $user_row['username'];
-                                    $user_email = $user_row['user_email'];
-                                    $user_phone_number = $user_row['user_phone_number'];
-                                    $user_address = $user_row['user_address'];
+                                  while($user_order_row = mysqli_fetch_assoc($user_order_result)){
+                                    $order_id = $user_order_row['order_id'];
+                                    $total_price = $user_order_row['total_price'];
+                                    $total_products = $user_order_row['total_products'];
+                                    $order_date = $user_order_row['order_date'];
+                                    $status = $user_order_row['status'];
   
                                   ?>
 
                     <tbody>
                       <tr class="text-center">
-                        <td><?php echo $username?></td>
-                        <td><?php echo $user_email ?></td>
-                        <td><?php echo $user_address ?></td>
-                        <td><?php echo $user_phone_number ?></td>
-                        <td class="text-center"><a href="view_user_order.php?user_id=<?php echo $user_id?>" class=" btn btn-success text-white text-decoration-none">View order</a></td>
+                        <td><?php echo $order_id?></td>
+                        <td><?php echo $total_products ?></td>
+                        <td><?php echo $total_price ?></td>
+                        <td><?php echo $order_date ?></td>
+                        <td><?php echo $status ?></td>
                         </tr>
                     </tbody>
                     <?php

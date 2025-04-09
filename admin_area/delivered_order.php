@@ -1,24 +1,29 @@
 <?php
-
 include("../includes/connect.php");
 
-if(isset($_GET['edit_category'])){
-    $category_id = $_GET['edit_category'];
-    $select_category = "Select * from `categories` where category_id = $category_id";
-    $result_category = mysqli_query($con, $select_category);
-    $row_category = mysqli_fetch_assoc($result_category);
-    $category_title = $row_category['category_title'];
+// fetching the number of products
+$products_sql = "SELECT * FROM `products`";
+$product_result = mysqli_query($con, $products_sql);
+$products_row = mysqli_num_rows($product_result);
 
-}
+// fetching the number of categories
+$categories_sql = "SELECT * FROM `categories`";
+$categories_result = mysqli_query($con, $categories_sql);
+$categories_row = mysqli_num_rows($categories_result);
+
+// fetching the number of brands
+$brands_sql = "SELECT * FROM `brands`";
+$brands_result = mysqli_query($con, $brands_sql);
+$brands_row = mysqli_num_rows($brands_result);
+
 ?>
-
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit Category</title>
+    <title>Delivered orders</title>
     <!-- BOOTSTRAP STYLES-->
     <link href="assets/css/bootstrap.css" rel="stylesheet" />
     <!-- FONTAWESOME STYLES-->
@@ -27,13 +32,16 @@ if(isset($_GET['edit_category'])){
     <link href="assets/js/morris/morris-0.4.3.min.css" rel="stylesheet" />
     <!-- CUSTOM STYLES-->
     <link href="assets/css/custom.css" rel="stylesheet" />
+    <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet" />
+    
+
     <!-- GOOGLE FONTS-->
     <link
       href="http://fonts.googleapis.com/css?family=Open+Sans"
       rel="stylesheet"
       type="text/css"
     />
-    <link rel="stylesheet" href="assets/css/responsive.css">
+    <link rel="stylesheet" href="./assets/css/responsive.css">
   </head>
   <body>
     <div id="wrapper">
@@ -54,7 +62,7 @@ if(isset($_GET['edit_category'])){
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.php">Qjen Admin</a>
+          <a class="navbar-brand" href="index.html">Qjen Admin</a>
         </div>
         <div
           style="
@@ -70,7 +78,7 @@ if(isset($_GET['edit_category'])){
       <!-- /. NAV TOP  -->
       <nav class="navbar-default navbar-side" role="navigation">
         <div class="sidebar-collapse">
-          <ul class="nav" id="main-menu">
+        <ul class="nav" id="main-menu">
             <li class="text-center">
               <img
                 src="assets/img/find_user.png"
@@ -79,7 +87,7 @@ if(isset($_GET['edit_category'])){
             </li>
 
             <li>
-              <a href="index.php"
+              <a class="" href="index.php"
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
@@ -94,7 +102,7 @@ if(isset($_GET['edit_category'])){
               >
             </li>
             <li>
-              <a class="active-menu" href="insert_category.php"
+              <a href="insert_category.php"
                 ><i class="fa fa-chevron-down fa-3x"></i> Add Categories</a
               >
             </li>
@@ -114,17 +122,17 @@ if(isset($_GET['edit_category'])){
               >
             </li>
             <li>
-              <a href="processing_order.php"
-                ><i class="fa fa-bar-chart-o fa-3x"></i> Processing Orders</a
+              <a class="" href="processing_order.php"
+                ><i class="fa fa-suitcase fa-3x" aria-hidden="true"></i> Processing Orders</a
               >
             </li>
             <li>
-              <a href="delivered_order.php"
+              <a class="active-menu" href="delivered_order.php"
                 ><i class="fa fa-truck fa-3x" aria-hidden="true"></i> Delivered Orders</a
               >
             </li>
             <li>
-              <a class="active-menu" href="cancelled_order.php"
+              <a class="" href="cancelled_order.php"
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
@@ -181,30 +189,76 @@ if(isset($_GET['edit_category'])){
         <div id="page-inner">
           <div class="row">
             <div class="col-md-12">
-              <h2>Edit Category</h2>
-              <h5>Love to see you.</h5>
+              <h2>Admin Dashboard</h2>
+              <h5>Love to see you back.</h5>
             </div>
           </div>
           <!-- /. ROW  -->
           <hr />
-          <!-- start coding here -->
-           <div>
-            <form action="" method="post">
-                <div class="product-name">
-                    <label for="" class="form-label">Category</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="category_title"
-                      value="<?php echo $category_title ?>"
-                      autocomplete="off"
-                    />
-                  </div>
-                  <input type="submit" name="edit_category" class="btn btn-primary">
-            </form>
-           </div>
           <!-- /. ROW  -->
-        </div>
+          <hr />
+          <!-- table should come here -->
+          <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Delivered Orders
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered table-hover">
+                         
+
+                                <?php
+                                
+                                
+                              // fetching of orders
+                              $order_sql = "Select * from `user_orders` where status = 'Delivered' ORDER BY order_date DESC";
+                              $order_result = mysqli_query($con, $order_sql);
+                              if(mysqli_num_rows($order_result)==0){
+                                echo "<div class='text-center text-danger'>No processing orders yet!</div>";
+                              }else{
+                                echo "  <thead>
+                                <tr>
+                                    <th class='text-center'>Order id</th>
+                                    <th class='text-center'>Invoice</th>
+                                    <th class='text-center'>Date / Time</th>
+                                    <th class='text-center'>Total products</th>
+                                    <th class='text-center'>Total price</th>
+                                    <th class='text-center'>Status</th>
+                                    <th class='text-center'>Action</th>
+                                </tr>
+                            </thead>";
+                              
+                                while($order_row = mysqli_fetch_assoc($order_result)){
+                                  $invoice_number = $order_row['invoice_number'];
+                                  $order_id = $order_row['order_id'];
+                                  $total_products = $order_row['total_products'];
+                                  $total_price = $order_row['total_price'];
+                                  $order_date = $order_row['order_date'];
+                                  $status = $order_row['status'];
+
+                                ?>
+                                  
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center"># <?php echo $order_id?></td>
+                                            <td class="text-center"><?php echo $invoice_number?></td>
+                                            <td class="text-center"><?php echo $order_date?></td>
+                                            <td class="text-center"><?php echo $total_products?></td>
+                                            <td class="text-center"><?php echo $total_price?></td>
+                                            <td class="text-center"><?php echo $status?></td>
+                                            <td class="text-center"><a href="view_product_detail.php?order_id=<?php echo $order_id?>" class=" btn btn-success text-white text-decoration-none">View</a></td>
+                                        </tr>
+                                    </tbody>
+                                    <?php
+                                      }
+                                    }
+                                    ?>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+    
+       
         <!-- /. PAGE INNER  -->
       </div>
       <!-- /. PAGE WRAPPER  -->
@@ -220,26 +274,14 @@ if(isset($_GET['edit_category'])){
     <!-- MORRIS CHART SCRIPTS -->
     <script src="assets/js/morris/raphael-2.1.0.min.js"></script>
     <script src="assets/js/morris/morris.js"></script>
+    <script src="assets/js/dataTables/jquery.dataTables.js"></script>
+    <script src="assets/js/dataTables/dataTables.bootstrap.js"></script>
+    <script>
+            $(document).ready(function () {
+                $('#dataTables-example').dataTable();
+            });
+    </script>
     <!-- CUSTOM SCRIPTS -->
     <script src="assets/js/custom.js"></script>
   </body>
 </html>
-
-<!-- editing category -->
-
-<?php
-if(isset($_POST['edit_category'])){
-    $category_title = $_POST['category_title'];
-    $update_category = "update `categories` set category_title = '$category_title' where category_id = $category_id";
-
-    $result_update = mysqli_query($con, $update_category);
-    if($result_update){
-        echo "<script>alert('Category updated successfully')</script>";
-        echo "<script>window.open('view_category.php','_self')</script>";
-
-    }else{
-        echo "<script>alert('There was a problem updating the category')</script>";
-    }
-
-}
-?>

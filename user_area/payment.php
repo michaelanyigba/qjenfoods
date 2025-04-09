@@ -11,8 +11,17 @@ if(!isset($_SESSION['username'])){
 }
 
 if(isset($_POST['order_mode'])){
+
+    $all_products_json=[];
     $order_receiving_mode= $_POST['receiving_mode'];
     $order_payment_mode= $_POST['payment_mode'];
+
+    if($order_receiving_mode=='' or $order_payment_mode==''){
+        echo "<script>alert('Please select all')</script>";
+    }
+    else{
+
+  
 
     // select the user
 $username = $_SESSION['username'];
@@ -32,16 +41,42 @@ $invoice_number = mt_rand();
 $count_products = mysqli_num_rows($result_cart_price);
 while($row_price = mysqli_fetch_array($result_cart_price)){
     $product_id = $row_price['product_id'];
+    $quantity = $row_price['quantity'];
     $select_product = "Select * from `products` where product_id= $product_id";
     $run_price = mysqli_query($con, $select_product);
     while($row_product_price = mysqli_fetch_array($run_price)){
         $product_price = array($row_product_price['product_price']);
+        $price_table = $row_product_price['product_price'];
         $product_values = array_sum($product_price);
-        $total_price += $product_values;
+        $product_row_price = $price_table * $quantity;
+        $total_price += $product_row_price;
+
+
+        // $product_price = array($row_product_price['product_price']);
+        // $price_table= $row_product_price['product_price'];
+        // $product_title= $row_product_price['product_title'];
+        // $product_image1= $row_product_price['product_image1'];
+        // $product_values = array_sum($product_price);
+        // $product_row_price = $price_table * $quantity;
+        // $total_price += $product_row_price;
 
 
     }
 }
+
+// fetching for all the products
+$all_product_query = "Select * from `cart_details` where ip_address = '$get_ip_address'";
+$product_result = mysqli_query($con, $all_product_query);
+if($product_result -> num_rows>0){
+    $all_products = [];
+
+    while($row =$product_result->fetch_assoc()){
+        $all_products[] =["product_id"=> $row['product_id'], "quantity"=>$row['quantity']];
+    }
+    $all_products_json = json_encode($all_products);
+}
+
+// echo $all_products_json;
 // getting quantity from cart
 $get_cart= "Select * from `cart_details` ";
 $result_cart = mysqli_query($con, $get_cart);
@@ -49,16 +84,18 @@ $total_products = mysqli_num_rows($result_cart);
 
 
 // inserting data into the orders database
-$insert_orders = "Insert into `user_orders` (user_id, total_price, invoice_number, total_products, order_date, order_receiving_mode, order_payment_mode) values ($user_id, $total_price, $invoice_number, $total_products, NOW(), '$order_receiving_mode', '$order_payment_mode')";
+$insert_orders = "Insert into `user_orders` (user_id, total_price, invoice_number, total_products, order_date, order_receiving_mode, order_payment_mode, products, status) values ($user_id, $total_price, $invoice_number, $total_products, NOW(), '$order_receiving_mode', '$order_payment_mode','$all_products_json','Pending')";
  $result_query = mysqli_query($con, $insert_orders);
  if($result_query){
     echo "<script>alert('Orders submitted successfully')</script>";
     echo "<script>window.open('profile.php', '_self')</script>";
  }
 
-
-
-
+ 
+//  after order is sent to orders database then we delete orders from cart
+$empty_cart = "Delete from `cart_details` where ip_address = '$get_ip_address'";
+$result_delete = mysqli_query($con, $empty_cart);
+}
 
 
 }
@@ -197,7 +234,7 @@ $insert_orders = "Insert into `user_orders` (user_id, total_price, invoice_numbe
                 </div>
             </div>
             </div>
-            <button class="btn btn-primary payment-button" name="order_mode" type="submit">Submit</button>
+            <button class="btn btn-primary payment-button" name="order_mode" type="submit">Place order</button>
           </div>
           </form>
         </div>

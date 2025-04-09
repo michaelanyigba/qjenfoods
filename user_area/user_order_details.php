@@ -10,7 +10,6 @@ if(!isset($_SESSION['username'])){
 
 }
 
-
 ?>
 
 <!DOCTYPE html>
@@ -48,10 +47,7 @@ if(!isset($_SESSION['username'])){
         <div class="row bg-secondary py-1 px-xl-5">
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="d-inline-flex align-items-center h-100">
-                    <a class="text-body mr-3" href="">About</a>
-                    <a class="text-body mr-3" href="">Contact</a>
-                    <a class="text-body mr-3" href="">Help</a>
-                    <a class="text-body mr-3" href="">FAQs</a>
+                    <!-- <a class="text-body mr-3" href="">About</a> -->
                 </div>
             </div>
             <div class="col-lg-6 text-center text-lg-right">
@@ -103,7 +99,7 @@ if(!isset($_SESSION['username'])){
                                     <a href="cart.php" class="dropdown-item">Shopping Cart</a>
                                 </div>
                             </div>
-                            <a href="contact.html" class="nav-item nav-link">Contact</a>
+                            <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                     </div>
                 </nav>
@@ -126,108 +122,96 @@ if(!isset($_SESSION['username'])){
             <div class="d-flex justify-content-between align-items-center mb-4">
               <p class="lead fw-normal mb-0" style="color: #a8729a;">All Orders</p>
             </div>
-            <div class="card shadow-0 border mb-4">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-md-2">
-                    <img src="img/product-1.jpg"
-                      class="img-fluid" alt="image">
+            <!-- codes  -->
+             <?php
+             if(isset($_GET['order_id'])){
+              $order_id = $_GET['order_id'];
+              $order_query = "Select * from `user_orders` where order_id = $order_id";
+              $order_result = mysqli_query($con, $order_query);
+              if($order_result->num_rows>0){
+                $row = $order_result->fetch_assoc();
+                $products = json_decode($row['products'], true);
+                foreach($products as $product){
+                  $product_ids = $product['product_id'];
+                  $product_quantity = $product['quantity'];
+                  $product_query = "Select * from `products` where product_id = $product_ids";
+                  $product_result = mysqli_query($con, $product_query);
+                  while($product_row = mysqli_fetch_assoc($product_result)){
+                    $product_title = $product_row['product_title'];
+                    $product_image = $product_row['product_image1'];
+                    $product_description = $product_row['product_description'];
+                    $product_price = $product_row['product_price'];
+                    $product_category_id = $product_row['category_id'];
+                    $category_query = "Select * from `categories` where category_id = $product_category_id";
+                    $category_result = mysqli_query($con, $category_query);
+                    $category_row = mysqli_fetch_assoc($category_result);
+                    $category_title = $category_row['category_title'];
+                    $sub_total = $product_price * $product_quantity;
+  echo "
+<div class='card shadow-0 border mb-4'>
+              <div class='card-body'>
+                <div class='row'>
+                  <div class='col-md-2'>
+                    <img src='../admin_area/product_images/$product_image'
+                      class='img-fluid' alt='image'>
                   </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0">Samsung Galaxy</p>
+                  <div class='col-md-2 text-center d-flex justify-content-center align-items-center'>
+                    <p class='text-muted mb-0'>$product_title</p>
                   </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0 small">White</p>
+                  <div class='col-md-2 text-center d-flex justify-content-center align-items-center'>
+                    <p class='text-muted mb-0 small'>$category_title</p>
                   </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0 small">Capacity: 64GB</p>
+                  <div class='col-md-2 text-center d-flex justify-content-center align-items-center'>
+                    <p class='text-muted mb-0 small'>Qty: $product_quantity</p>
                   </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0 small">Qty: 1</p>
+                  <div class='col-md-2 text-center d-flex justify-content-center align-items-center'>
+                    <p class='text-muted mb-0 small'>Price: $$product_price</p>
                   </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0 small">$499</p>
-                  </div>
-                </div>
-                <hr class="mb-4" style="background-color: #e0e0e0; opacity: 1;">
-                <div class="row d-flex align-items-center">
-                  <div class="col-md-2">
-                    <p class="text-muted mb-0 small">Track Order</p>
-                  </div>
-                  <div class="col-md-10">
-                    <div class="progress" style="height: 6px; border-radius: 16px;">
-                      <div class="progress-bar" role="progressbar"
-                        style="width: 95%; border-radius: 16px; background-color: #a8729a;" aria-valuenow="65"
-                        aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                    <div class="d-flex justify-content-around mb-1">
-                      <p class="text-muted mt-1 mb-0 small ms-xl-5">Packaging</p>
-                      <p class="text-muted mt-1 mb-0 small ms-xl-5">Delivered</p>
-                      <p class="text-muted mt-1 mb-0 small ms-xl-5">Delivered</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!--  -->
-            <div class="card shadow-0 border mb-4">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-md-2">
-                    <img src="img/product-2.jpg"
-                      class="img-fluid" alt="Phone">
-                  </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0">iPad</p>
-                  </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0 small">Pink rose</p>
-                  </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0 small">Capacity: 32GB</p>
-                  </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0 small">Qty: 1</p>
-                  </div>
-                  <div class="col-md-2 text-center d-flex justify-content-center align-items-center">
-                    <p class="text-muted mb-0 small">$399</p>
-                  </div>
-                </div>
-                <hr class="mb-4" style="background-color: #e0e0e0; opacity: 1;">
-                <div class="row d-flex align-items-center">
-                  <div class="col-md-2">
-                    <p class="text-muted mb-0 small">Track Order</p>
-                  </div>
-                  <div class="col-md-10">
-                    <div class="progress" style="height: 6px; border-radius: 16px;">
-                      <div class="progress-bar" role="progressbar"
-                        style="width: 20%; border-radius: 16px; background-color: #a8729a;" aria-valuenow="20"
-                        aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                    <div class="d-flex justify-content-around mb-1">
-                      <p class="text-muted mt-1 mb-0 small ms-xl-5">Packing</p>
-                      <p class="text-muted mt-1 mb-0 small ms-xl-5">Out for delivery</p>
-                      <p class="text-muted mt-1 mb-0 small ms-xl-5">Delivered</p>
-                    </div>
+                  <div class='col-md-2 text-center d-flex justify-content-center align-items-center'>
+                    <p class='text-muted mb-0 small'>Sub total: $$sub_total</p>
                   </div>
                 </div>
               </div>
             </div>
+      ";
+            
+                  }
+                }
+              }
+            
+            }
 
-            <div class="d-flex justify-content-between pt-2">
-              <p class="fw-bold mb-0">Order Details</p>
-              <p class="text-muted mb-0"><span class="fw-bold me-4">Total</span> $898.00</p>
+             ?>
+                   
+            <div class='d-flex justify-content-between pt-2'>
+              <p class='fw-bold mb-0'>Order Details</p>
+              <?php
+                  $total_price = 0;
+                  $price_query = "Select * from `user_orders` where order_id = $order_id";
+                  $price_result = mysqli_query($con, $price_query);
+                  $price_row = mysqli_fetch_assoc($price_result);
+                  $total_price = $price_row['total_price'];
+                  $order_date = $price_row['order_date'];
+                  $invoice_number = $price_row['invoice_number'];
+                  $status = $price_row['status'];
+                  echo "<p class='text-muted mb-0'><span class='fw-bold me-4'>Total:</span> $$total_price</p>
+                  </div>
+
+                      <div class='d-flex justify-content-between pt-2'>
+              <p class='text-muted mb-0'>Invoice Number : $invoice_number</p>
+            </div>
+            <div class='d-flex justify-content-between'>
+              <p class='text-muted mb-0'>Invoice Date : $order_date</p>
+            </div>
+            <div class='d-flex justify-content-between'>
+              <p class='text-green mb-0'>Order Status : $status</p>
             </div>
 
-            <div class="d-flex justify-content-between pt-2">
-              <p class="text-muted mb-0">Invoice Number : 788152</p>
-              <!-- <p class="text-muted mb-0"><span class="fw-bold me-4">Discount</span> $19.00</p> -->
-            </div>
-
-            <div class="d-flex justify-content-between">
-              <p class="text-muted mb-0">Invoice Date : 22 Dec,2019</p>
-              <!-- <p class="text-muted mb-0"><span class="fw-bold me-4">GST 18%</span> 123</p> -->
-            </div>
+           
+";
+              ?>
+           
+            
           </div>
         </div>
       </div>
@@ -237,15 +221,13 @@ if(!isset($_SESSION['username'])){
 
 <!-- orders end -->
 
-
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
+ <!-- Footer Start -->
+ <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
-                <p class="mb-4">No dolore ipsum accusam no lorem. Invidunt sed clita kasd clita et et dolor sed dolor. Rebum tempor no vero est magna amet no</p>
-                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
+                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, Accra, Ghana</p>
+                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>qjen@example.com</p>
                 <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
             </div>
             <div class="col-lg-8 col-md-12">
@@ -253,36 +235,20 @@ if(!isset($_SESSION['username'])){
                     <div class="col-md-4 mb-5">
                         <h5 class="text-secondary text-uppercase mb-4">Quick Shop</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="./../index.php"><i class="fa fa-angle-right mr-2"></i>Home</a>
+                            <a class="text-secondary mb-2" href="shop.php"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
+                            <a class="text-secondary mb-2" href="cart.php"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
+                            <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-5">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Orders</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-5">
-                        <h5 class="text-secondary text-uppercase mb-4">Newsletter</h5>
-                        <p>Duo stet tempor ipsum sit amet magna ipsum tempor est</p>
-                        <form action="">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Your Email Address">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary">Sign Up</button>
-                                </div>
-                            </div>
-                        </form>
                         <h6 class="text-secondary text-uppercase mt-4 mb-3">Follow Us</h6>
                         <div class="d-flex">
                             <a class="btn btn-primary btn-square mr-2" href="#"><i class="fab fa-twitter"></i></a>
@@ -295,15 +261,8 @@ if(!isset($_SESSION['username'])){
             </div>
         </div>
         <div class="row border-top mx-xl-5 py-4" style="border-color: rgba(256, 256, 256, .1) !important;">
-            <div class="col-md-6 px-xl-0">
-                <p class="mb-md-0 text-center text-md-left text-secondary">
-                    &copy; <a class="text-primary" href="#">Domain</a>. All Rights Reserved. Designed
-                    by
-                    <a class="text-primary" href="https://htmlcodex.com">HTML Codex</a>
-                </p>
-            </div>
             <div class="col-md-6 px-xl-0 text-center text-md-right">
-                <img class="img-fluid" src="img/payments.png" alt="">
+                <!-- <img class="img-fluid" src="img/payments.png" alt=""> -->
             </div>
         </div>
     </div>

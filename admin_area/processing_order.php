@@ -1,6 +1,5 @@
-﻿<?php
+<?php
 include("../includes/connect.php");
-session_start();
 
 // fetching the number of products
 $products_sql = "SELECT * FROM `products`";
@@ -17,17 +16,6 @@ $brands_sql = "SELECT * FROM `brands`";
 $brands_result = mysqli_query($con, $brands_sql);
 $brands_row = mysqli_num_rows($brands_result);
 
-// fetching the number of users
-$users_sql = "SELECT * FROM `users`";
-$users_result = mysqli_query($con, $users_sql);
-$users_row = mysqli_num_rows($users_result);
-
-if($_SESSION['username']){
-  $username = $_SESSION['username'];
-}
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +23,7 @@ if($_SESSION['username']){
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
+    <title> Processing orders</title>
     <!-- BOOTSTRAP STYLES-->
     <link href="assets/css/bootstrap.css" rel="stylesheet" />
     <!-- FONTAWESOME STYLES-->
@@ -44,7 +32,8 @@ if($_SESSION['username']){
     <link href="assets/js/morris/morris-0.4.3.min.css" rel="stylesheet" />
     <!-- CUSTOM STYLES-->
     <link href="assets/css/custom.css" rel="stylesheet" />
-    <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet" />    
+    <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet" />
+    
 
     <!-- GOOGLE FONTS-->
     <link
@@ -98,7 +87,7 @@ if($_SESSION['username']){
             </li>
 
             <li>
-              <a class="active-menu" href="index.php"
+              <a class="" href="index.php"
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
@@ -133,8 +122,8 @@ if($_SESSION['username']){
               >
             </li>
             <li>
-              <a href="processing_order.php"
-                ><i class="fa fa-suitcase fa-3x" aria-hidden="true"></i> Processing Orders</a
+              <a class="active-menu" href="processing_order.php"
+                ><i class="fa fa-suitcase fa-3x" aria-hidden="true"></i> Processing orders</a
               >
             </li>
             <li>
@@ -161,66 +150,17 @@ if($_SESSION['username']){
           <div class="row">
             <div class="col-md-12">
               <h2>Admin Dashboard</h2>
-              <h5>Welcome <span class="text-danger"><?php echo $username?></span>, Love to see you back.</h5>
+              <h5>Love to see you back.</h5>
             </div>
           </div>
           <!-- /. ROW  -->
           <hr />
-          <div class="row">
-            <a href="view_products.php"><div class="col-md-3 col-sm-6 col-xs-6">
-              <div class="panel panel-back noti-box">
-                <span class="icon-box bg-color-red set-icon">
-                  <i class="fa fa-qrcode"></i>
-                </span>
-                <div class="text-box">
-                  <p class="main-text text-center"><?php echo $products_row?>  </p>
-                  <p class="text-muted">Products</p>
-                </div>
-              </div>
-            </div></a>
-            
-            <a href="view_category.php"><div class="col-md-3 col-sm-6 col-xs-6">
-              <div class="panel panel-back noti-box">
-                <span class="icon-box bg-color-green set-icon">
-                  <i class="fa fa-bars"></i>
-                </span>
-                <div class="text-box">
-                  <p class="main-text text-center"><?php echo $categories_row?>  </p>
-                  <p class="text-muted">Categories</p>
-                </div>
-              </div>
-            </div></a>
-            <a href="view_brand.php">   <div class="col-md-3 col-sm-6 col-xs-6">
-              <div class="panel panel-back noti-box">
-                <span class="icon-box bg-color-brown set-icon">
-                  <i class="fa fa-list-alt"></i>
-                </span>
-                <div class="text-box">
-                  <p class="main-text text-center"><?php echo $brands_row?> </p>
-                  <p class="text-muted">Brands</p>
-                </div>
-              </div>
-            </div></a>
-
-            <a href="view_user.php"><div class="col-md-3 col-sm-6 col-xs-6">
-              <div class="panel panel-back noti-box">
-                <span class="icon-box bg-color-blue set-icon">
-                  <i class="fa fa-rocket"></i>
-                </span>
-                <div class="text-box">
-                  <p class="main-text text-center">All</p>
-                  <p class="text-muted">Users</p>
-                </div>
-              </div>
-            </div></a>
-         
-          </div>
           <!-- /. ROW  -->
           <hr />
           <!-- table should come here -->
           <div class="panel panel-default">
                         <div class="panel-heading">
-                            New Orders
+                            Processing Orders
                         </div>
                         <div class="panel-body">
                             <div class="table-responsive">
@@ -231,10 +171,10 @@ if($_SESSION['username']){
                                 
                                 
                               // fetching of orders
-                              $order_sql = "Select * from `user_orders` where status = 'Pending' ORDER BY order_date DESC";
+                              $order_sql = "Select * from `user_orders` where status = 'Processing' ORDER BY order_date DESC";
                               $order_result = mysqli_query($con, $order_sql);
                               if(mysqli_num_rows($order_result)==0){
-                                echo "<div class='text-center text-danger'>No new orders yet!</div>";
+                                echo "<div class='text-center text-danger'>No processing orders yet!</div>";
                               }else{
                                 echo "  <thead>
                                 <tr>
