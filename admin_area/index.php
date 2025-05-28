@@ -2,6 +2,17 @@
 include("../includes/connect.php");
 session_start();
 
+  
+if(!isset($_SESSION['username']) || $_SESSION['role'] !=="admin" && $_SESSION['role'] !=="sub_admin"){
+  session_unset();
+  session_destroy();
+  header("Location: ../user_area/user_login.php");
+}
+
+$_SESSION['username'];
+$username = $_SESSION['username'];
+
+
 // fetching the number of products
 $products_sql = "SELECT * FROM `products`";
 $product_result = mysqli_query($con, $products_sql);
@@ -22,9 +33,7 @@ $users_sql = "SELECT * FROM `users`";
 $users_result = mysqli_query($con, $users_sql);
 $users_row = mysqli_num_rows($users_result);
 
-if($_SESSION['username']){
-  $username = $_SESSION['username'];
-}
+
 
 
 
@@ -44,7 +53,10 @@ if($_SESSION['username']){
     <link href="assets/js/morris/morris-0.4.3.min.css" rel="stylesheet" />
     <!-- CUSTOM STYLES-->
     <link href="assets/css/custom.css" rel="stylesheet" />
-    <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet" />    
+    <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet" /> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+ 
+    
 
     <!-- GOOGLE FONTS-->
     <link
@@ -73,7 +85,7 @@ if($_SESSION['username']){
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">Qjen Admin</a>
+          <a class="navbar-brand" href="index.html"><?php echo $username?> Admin</a>
         </div>
         <div
           style="
@@ -102,31 +114,42 @@ if($_SESSION['username']){
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
-            <li>
-              <a class="" href="add_products.php"
-                ><i class="fa fa-desktop fa-3x"></i>Add products</a
-              >
-            </li>
+            <?php
+            if($_SESSION['role']==="admin"){
+              echo "<li><a class='' href='add_products.php'><i class='fa fa-desktop fa-3x'></i>Add products</a>
+            </li>";
+            }
+
+            ?>
+            
             <li>
               <a href="view_products.php"
                 ><i class="fa fa-qrcode fa-3x"></i> View Products</a
               >
             </li>
-            <li>
-              <a href="insert_category.php"
-                ><i class="fa fa-chevron-down fa-3x"></i> Add Categories</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a href='insert_category.php'
+                ><i class='fa fa-chevron-down fa-3x'></i> Add Categories</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_category.php"
                 ><i class="fa fa-check-circle fa-3x"></i> View Categories</a
               >
             </li>
-            <li>
-              <a href="insert_brand.php"
-                ><i class="fa fa-bell-o fa-3x"></i> Add Brands</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a class='' href='insert_brand.php'
+                ><i class='fa fa-bell-o fa-3x'></i> Add Brands</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_brand.php"
                 ><i class="fa fa-bar-chart-o fa-3x"></i> View Brands</a
@@ -147,11 +170,33 @@ if($_SESSION['username']){
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
-            <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "<li><a href='view_user.php'><i class='fa fa-rocket fa-3x'></i> View Users</a
               >
-            </li>
+            </li>";
+            }
+            ?>  
+
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "   <li>
+              <a href='add_member.php'
+                ><i class='fa-solid fa-people-arrows fa-3x'></i> Add Members</a
+              >
+            </li'";
+            }
+            ?>
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "     <li>
+              <a href='view_member.php'
+                ><i class='fa-solid fa-people-line fa-3x'></i> View Members</a
+              >
+            </li>";
+            }
+            ?>
+       
           </ul>
         </div>
       </nav>
@@ -264,7 +309,7 @@ if($_SESSION['username']){
                                             <td class="text-center"><?php echo $invoice_number?></td>
                                             <td class="text-center"><?php echo $order_date?></td>
                                             <td class="text-center"><?php echo $total_products?></td>
-                                            <td class="text-center"><?php echo $total_price?></td>
+                                            <td class="text-center"><i class='fas fa-cedi-sign'></i><?php echo $total_price?></td>
                                             <td class="text-center"><?php echo $status?></td>
                                             <td class="text-center"><a href="view_product_detail.php?order_id=<?php echo $order_id?>" class=" btn btn-success text-white text-decoration-none">View</a></td>
                                         </tr>

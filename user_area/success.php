@@ -6,8 +6,18 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-$user_role = $_SESSION['role'];
-$username = $_SESSION['username'];
+if($_SESSION['role']){
+    $user_role = $_SESSION['role'];
+
+}
+if($_SESSION['username']){
+    $username = $_SESSION['username'];
+
+}
+
+if($_SESSION['cart']){
+    $cart_item = $_SESSION['cart'];
+}
 
 
 
@@ -24,9 +34,13 @@ $username = $_SESSION['username'];
         <link href="css/responsive.css" rel="stylesheet">
     <script>
         setTimeout(() => {
-            <?php if($user_role === 'admin'):?>
+            <?php if($username && $user_role === 'admin'):?>
             window.location.href = "../admin_area/index.php"; 
-            <?php elseif ($user_role ==='user'):?>
+            <?php elseif($username && $user_role === 'sub_admin'):?>
+            window.location.href = "../admin_area/index.php"; 
+            <?php elseif ($user_role ==='user' && $cart_item ==='item_in_cart' ):?>
+            window.location.href = "cart.php"; 
+            <?php elseif ($user_role ==='user' && $cart_item === "no_item_in_cart"):?>
             window.location.href = "../index.php"; 
             <?php else: ?>
             window.location.href = "user_login.php"; 
@@ -43,7 +57,8 @@ $username = $_SESSION['username'];
             justify-content: center; /* Centers horizontally */
             align-items: center; /* Centers vertically */
             height: 100vh; /* Full viewport height */
-            margin: 0
+            margin: 0;
+            background-color: #fff;
         }
         .message-box {
             color: white;
@@ -58,6 +73,7 @@ $username = $_SESSION['username'];
             display:flex;
             justify-content:center;
             align-items: center;
+            border-radius: 10px;
 
         }
     </style>

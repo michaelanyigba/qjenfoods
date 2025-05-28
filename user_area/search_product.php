@@ -24,7 +24,9 @@ session_start();
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
 
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
 
     <!-- Libraries Stylesheet -->
     <link href="lib/animate/animate.min.css" rel="stylesheet">
@@ -175,7 +177,7 @@ add_to_cart_for_user_area();
     <div class="container-fluid">
         <div class="row px-xl-5">
                 <!-- Shop Product Start -->
-            <div class="col-lg-12 col-md-8">
+            <div class="col-lg-12 col-md-12">
                 <div class="row pb-3">
                     <div class="col-12 pb-1">
                     </div>
@@ -192,8 +194,8 @@ add_to_cart_for_user_area();
     <!-- Shop End -->
 
 
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
+ <!-- Footer Start -->
+ <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
@@ -212,7 +214,7 @@ add_to_cart_for_user_area();
                             <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-5">
+                    <div class="col-md-4 mb-3">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
                             <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>

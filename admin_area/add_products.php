@@ -1,6 +1,17 @@
 ﻿<?php
-
 include("../includes/connect.php");
+session_start();
+
+  
+if(!isset($_SESSION['username']) || $_SESSION['role'] !=="admin" && $_SESSION['role'] !=="sub_admin"){
+  session_unset();
+  session_destroy();
+  header("Location: ../user_area/user_login.php");
+}
+
+$_SESSION['username'];
+$username = $_SESSION['username'];
+
 
 if(isset($_POST['insert_product'])){
   $product_title = $_POST['product_title'];
@@ -9,7 +20,6 @@ if(isset($_POST['insert_product'])){
   $product_category = $_POST['product_category'];
   $product_brands = $_POST['product_brand'];
   $product_price = $_POST['product_price'];
-  $product_status = "true";
 
   // accessing images
   $product_image1 = $_FILES['product_image1']['name'];
@@ -23,8 +33,9 @@ if(isset($_POST['insert_product'])){
 
   // checking if some of the fields are empty
   if($product_title=='' or $description=='' or $product_keywords=='' or $product_category=='' or $product_brands=='' or $product_price=='' or $product_image1=='' or $product_image2=='' or $product_image3==''){
-      echo "<script>alert('Please fill all the fields')</script>";
-      exit();
+    $_SESSION['show_error'] = true;
+    header("Location: add_products.php");
+    exit();
   }else{
       // move images to the folder
       move_uploaded_file($temp_image1, "./product_images/$product_image1");
@@ -32,11 +43,29 @@ if(isset($_POST['insert_product'])){
       move_uploaded_file($temp_image3, "./product_images/$product_image3");
 
       // insert query to the database
-      $insert_products = "insert into `products` (product_title, product_description, product_keywords, category_id, brand_id, product_image1, product_image2, product_image3, product_price, date, status) values ('$product_title','$description','$product_keywords','$product_category','$product_brands','$product_image1','$product_image2','$product_image3','$product_price',NOW(),'$product_status')";
-      $result_query = mysqli_query($con, $insert_products);
-      if($result_query){
-          echo "<script>alert('Product added successfully')</script>";
+      // $insert_products = "insert into `products` (product_title, product_description, product_keywords, category_id, brand_id, product_image1, product_image2, product_image3, product_price, date) values ('$product_title','$description','$product_keywords','$product_category','$product_brands','$product_image1','$product_image2','$product_image3','$product_price',NOW())";
+
+      $insert_products = $con->prepare("INSERT INTO `products` (product_title, product_description, product_keywords, category_id, brand_id, product_image1, product_image2, product_image3, product_price, date) VALUES (?,?,?,?,?,?,?,?,?,NOW())");
+      $insert_products->bind_param("sssiissss",$product_title, $description, $product_keywords, $product_category, $product_brands, $product_image1, $product_image2, $product_image3, $product_price);
+      if($insert_products->execute()){
+        $_SESSION['show_success'] = true;
+        header("Location: add_products.php");
+        exit();
+      }else{
+        $_SESSION['show_error'] = true;
+
       }
+
+
+
+      // $result_query = mysqli_query($con, $insert_products);
+      // if($result_query){
+      //   $_SESSION['show_success'] = true;
+      //   header("Location: add_products.php");
+      //   exit();
+      // }else{
+        
+      // }
   }
 
 }
@@ -63,6 +92,8 @@ if(isset($_POST['insert_product'])){
       type="text/css"
     />
     <link rel="stylesheet" href="assets/css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
   </head>
   <body>
     <div id="wrapper">
@@ -83,7 +114,7 @@ if(isset($_POST['insert_product'])){
             <span class="fa fa-bar"></span>
             <span class="fa fa-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.php">Qjen Admin</a>
+          <a class="navbar-brand" href="index.php"><?php echo $username?> Admin</a>
         </div>
         <div
           style="
@@ -112,31 +143,41 @@ if(isset($_POST['insert_product'])){
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
-            <li>
-              <a class="active-menu" href="add_products.php"
-                ><i class="fa fa-desktop fa-3x"></i>Add products</a
-              >
-            </li>
+            <?php
+            if($_SESSION['role']==="admin"){
+              echo "<li><a class='active-menu' href='add_products.php'><i class='fa fa-desktop fa-3x'></i>Add products</a>
+            </li>";
+            }
+
+            ?>
             <li>
               <a href="view_products.php"
                 ><i class="fa fa-qrcode fa-3x"></i> View Products</a
               >
             </li>
-            <li>
-              <a href="insert_category.php"
-                ><i class="fa fa-chevron-down fa-3x"></i> Add Categories</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a href='insert_category.php'
+                ><i class='fa fa-chevron-down fa-3x'></i> Add Categories</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_category.php"
                 ><i class="fa fa-check-circle fa-3x"></i> View Categories</a
               >
             </li>
-            <li>
-              <a href="insert_brand.php"
-                ><i class="fa fa-bell-o fa-3x"></i> Add Brands</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a class='' href='insert_brand.php'
+                ><i class='fa fa-bell-o fa-3x'></i> Add Brands</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_brand.php"
                 ><i class="fa fa-bar-chart-o fa-3x"></i> View Brands</a
@@ -157,11 +198,31 @@ if(isset($_POST['insert_product'])){
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
-            <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "<li><a href='view_user.php'><i class='fa fa-rocket fa-3x'></i> View Users</a
               >
-            </li>
+            </li>";
+            }
+            ?>  
+              <?php
+            if($_SESSION['role']=== "admin"){
+              echo "   <li>
+              <a href='add_member.php'
+                ><i class='fa-solid fa-people-arrows fa-3x'></i> Add Members</a
+              >
+            </li'";
+            }
+            ?>
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "     <li>
+              <a href='view_member.php'
+                ><i class='fa-solid fa-people-line fa-3x'></i> View Members</a
+              >
+            </li>";
+            }
+            ?>
           </ul>
         </div>
       </nav>
@@ -179,6 +240,12 @@ if(isset($_POST['insert_product'])){
           <!-- /. ROW  -->
 
           <!-- /. ROW  -->
+
+           <!--alert starts  -->
+           <div id="success-alert" class="success-alert">Product added successfully!</div>
+           <div id="error-alert" class="error-alert">Please fill all fields!</div>
+             <!-- alert ends -->
+
           <div class="">
             <form action="" method="post" enctype="multipart/form-data">
               <div class="product-name">
@@ -260,7 +327,7 @@ if(isset($_POST['insert_product'])){
                   autocomplete="off"
                 />
               </div>
-              <input type="submit" name="insert_product" class="btn btn-primary" value="Insert product">
+              <input type="submit" name="insert_product" class="btn btn-primary insert-btn" value="Insert product">
             </form>
           </div>
 
@@ -280,5 +347,35 @@ if(isset($_POST['insert_product'])){
     <script src="assets/js/jquery.metisMenu.js"></script>
     <!-- CUSTOM SCRIPTS -->
     <script src="assets/js/custom.js"></script>
+    <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+
+        // Trigger from PHP using session
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+  </script>
   </body>
 </html>

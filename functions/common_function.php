@@ -1,5 +1,5 @@
 <?php
-// include("./includes/connect.php");
+ ob_start();
 
 // fuction for getting  products with the limit of products to be displayed
 function get_products(){
@@ -29,7 +29,7 @@ function get_products(){
                     <div class='text-center py-4'>
                         <a class='h6 text-decoration-none text-truncate' href=''>$product_title</a>
                         <div class='d-flex align-items-center justify-content-center mt-2'>
-                            <h5>$$product_price</h5><h6 class='text-muted ml-2'></h6>
+                            <h5><i class='fas fa-cedi-sign'></i>$product_price</h5><h6 class='text-muted ml-2'></h6>
                         </div>
                     </div>
                 </div>
@@ -46,7 +46,7 @@ function get_related_products(){
     if(isset($_GET['product_id'])){
         global $con;
         $product_id = $_GET['product_id'];
-      $select_query="SELECT * FROM `products` WHERE category_id = (SELECT category_id FROM `products` WHERE product_id = $product_id) AND product_id != $product_id limit 0,8";
+      $select_query="SELECT  * FROM `products` WHERE category_id = (SELECT category_id FROM `products` WHERE product_id = $product_id) AND product_id != $product_id limit 0,5";
         $result = mysqli_query($con, $select_query);
         while($result_row = mysqli_fetch_assoc($result)){
             $product_title = $result_row['product_title'];
@@ -62,7 +62,7 @@ function get_related_products(){
                         <div class='text-center py-4'>
                             <a class='h6 text-decoration-none text-truncate' href=''>$product_title</a>
                             <div class='d-flex align-items-center justify-content-center mt-2'>
-                                <h5>$$product_price</h5><h6 class='text-muted ml-2'></h6>
+                                <h5><i class='fas fa-cedi-sign'></i>$product_price</h5><h6 class='text-muted ml-2'></h6>
                             </div>
                         </div>
                     </div>";
@@ -144,7 +144,7 @@ function product_details(){
                     <p><span class='text-dark'>Name:</span> $product_title</p>
                     <p class='mb-4'><span class='text-dark'>Description:</span> $product_description</p>
                     <p class='mb-4'><span class='text-dark'>Category:</span> $category_title</p>
-                    <p class='font-weight-semi-bold mb-4'><span class='text-dark'>Price:</span> $$product_price</p>
+                    <p class='font-weight-semi-bold mb-4'><span class='text-dark'>Price: </span><i class='fas fa-cedi-sign'></i>$product_price</p>
 
                     <div class='d-flex align-items-center mb-4 pt-2'>
                         <a href='detail.php?add_to_cart_for_user=$product_id' class='btn btn-primary px-3'><i class='fa fa-shopping-cart mr-1'></i> Add To
@@ -174,7 +174,7 @@ function get_all_products(){
      $product_price = $row['product_price'];
      $category_id = $row['category_id'];
      $brand_id = $row['brand_id'];
-     echo "<div class='col-lg-3 col-md-6 col-sm-6 pb-1'>
+     echo "<div class='col-lg-3 col-md-4 col-sm-6 pb-1'>
                         <div class='product-item bg-light mb-4'>
                             <div class='product-img position-relative overflow-hidden'>
                                 <img class='img-fluid w-80' src='../admin_area/product_images/$product_image1' alt=''>
@@ -186,7 +186,7 @@ function get_all_products(){
                             <div class='text-center py-4'>
                                 <a class='h6 text-decoration-none text-truncate' href=''>$product_title</a>
                                 <div class='d-flex align-items-center justify-content-center mt-2'>
-                                    <h5>$$product_price</h5>
+                                    <h5><i class='fas fa-cedi-sign'></i> $product_price</h5>
                                 </div>
                             </div>
                         </div>
@@ -208,7 +208,7 @@ function get_all_categories(){
     // counting the number of rows
     $num_of_rows = mysqli_num_rows($result_query);
     if($num_of_rows==0){
-      echo "<h2 class='text-center text-danger'>No stock for this category</h2>";
+      echo "<h5 class='text-center no_stock text-gray'>No stock for this category</h5>";
     }
     while($row = mysqli_fetch_assoc($result_query)){
      $product_id = $row['product_id'];
@@ -230,7 +230,7 @@ function get_all_categories(){
                             <div class='text-center py-4'>
                                 <a class='h6 text-decoration-none text-truncate' href=''>$product_title</a>
                                 <div class='d-flex align-items-center justify-content-center mt-2'>
-                                    <h5>$$product_price</h5>
+                                    <h5><i class='fas fa-cedi-sign'></i> $product_price</h5>
                                 </div>
                             </div>
                         </div>
@@ -259,7 +259,7 @@ function search_product_for_index(){
      $product_price = $row['product_price'];
      $category_id = $row['category_id'];
      $brand_id = $row['brand_id'];
-     echo "<div class='col-lg-3 col-md-6 col-sm-6 pb-1'>
+     echo "<div class='col-lg-3 col-md-4 col-sm-6 pb-1'>
                         <div class='product-item bg-light mb-4'>
                             <div class='product-img position-relative overflow-hidden'>
                                 <img class='img-fluid w-100' src='../admin_area/product_images/$product_image1' alt=''>
@@ -271,7 +271,7 @@ function search_product_for_index(){
                             <div class='text-center py-4'>
                                 <a class='h6 text-decoration-none text-truncate' href=''>$product_title</a>
                                 <div class='d-flex align-items-center justify-content-center mt-2'>
-                                    <h5>$$product_price</h5>
+                                    <h5><i class='fas fa-cedi-sign'></i>$product_price</h5>
                                 </div>
                             </div>
                         </div>
@@ -314,15 +314,21 @@ function getIPAddress() {
        $result_query = mysqli_query($con, $select_query);
        $num_of_rows = mysqli_num_rows($result_query);
        if($num_of_rows>0){
-         echo "<script>alert('Product already in cart')</script>";
-        //  redirect to the index page
-        echo "<script>window.open('index.php','_self')</script>";
+        $_SESSION['show_error'] = true;
+        header("Location: index.php");
+        exit();
        }else{
         $insert_query= "insert into `cart_details` (product_id, ip_address, quantity) values ($get_product_id, '$get_ip_add', 1)";
         $result_query = mysqli_query($con, $insert_query);
-        echo "<script>alert('Product added to cart successfully')</script>";
-        // when user clicks on okay it should direct them to the index page
-        echo "<script>window.open('index.php','_self')</script>";
+        if($result_query){
+           $_SESSION['show_success'] = true;
+           header("Location: index.php");
+           exit();
+        }else{
+            $_SESSION['show_error'] = true;
+            header("Location: index.php");
+            exit();
+        }
   
        }
       }
@@ -340,15 +346,24 @@ function getIPAddress() {
        $result_query = mysqli_query($con, $select_query);
        $num_of_rows = mysqli_num_rows($result_query);
        if($num_of_rows>0){
-         echo "<script>alert('Product already in cart')</script>";
-        //  redirect to the index page
-        echo "<script>window.open('shop.php','_self')</script>";
+        $_SESSION['show_error'] = true;
+        header("Location: shop.php");
+        exit();
        }else{
         $insert_query= "insert into `cart_details` (product_id, ip_address, quantity) values ($get_product_id, '$get_ip_add', 1)";
         $result_query = mysqli_query($con, $insert_query);
-        echo "<script>alert('Product added to cart successfully')</script>";
-        // when user clicks on okay it should direct them to the index page
-        echo "<script>window.open('shop.php','_self')</script>";
+        if($result_query){
+            $_SESSION['show_success'] = true;
+            header("Location: shop.php");
+            exit();
+        }else{
+            $_SESSION['show_error'] = true;
+            header("Location: shop.php");
+            exit();
+        }
+
+        header("Location: shop.php");
+        exit();
   
        }
       }
@@ -362,9 +377,10 @@ function cart_item(){
   $cart_query = "Select * from `cart_details` where ip_address = '$get_ip_address'";
   $result_cart = mysqli_query($con, $cart_query);
   $count_products = mysqli_num_rows($result_cart);
-  
   echo $count_products;
   }
+
+  ob_end_flush();
 
 ?>
 

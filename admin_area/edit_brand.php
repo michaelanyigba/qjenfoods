@@ -1,13 +1,67 @@
 <?php
 
 include("../includes/connect.php");
+session_start();
+
+  
+if(!isset($_SESSION['username']) || $_SESSION['role'] !=="admin" && $_SESSION['role'] !=="sub_admin"){
+  session_unset();
+  session_destroy();
+  header("Location: ../user_area/user_login.php");
+}
+
+$_SESSION['username'];
+$username = $_SESSION['username'];
+
 
 if(isset($_GET['edit_brand'])){
     $brand_id = $_GET['edit_brand'];
-    $select_brand = "Select * from `brands` where brand_id = $brand_id";
-    $result_brand = mysqli_query($con, $select_brand);
-    $row_brand = mysqli_fetch_assoc($result_brand);
+    $select_brand = $con->prepare("SELECT * FROM `brands` WHERE brand_id = ?");
+    $select_brand->bind_param("i", $brand_id);
+    $select_brand->execute();
+    $result_brand = $select_brand->get_result();
+
+    $row_brand = $result_brand->fetch_assoc();
     $brand_title = $row_brand['brand_title'];
+
+}
+
+// editing the brand
+
+if(isset($_POST['edit_brand'])){
+  $brand_title = $_POST['brand_title'];
+
+  if($brand_title == ''){
+    $_SESSION['show_field_error'] = true;
+    header("Location: edit_brand.php?edit_brand=$brand_id");
+    exit();
+  }
+
+  $select_brand_sql = $con->prepare("SELECT * FROM `brands` WHERE brand_title = ?");
+  $select_brand_sql->bind_param("s", $brand_title);
+  $select_brand_sql->execute();
+  $brand_number = $select_brand_sql->get_result();
+  if($brand_number->num_rows>0){
+    $_SESSION['show_error'] = true;
+    header("Location: edit_brand.php?edit_brand=$brand_id");
+    exit();
+  }
+  else{
+    $update_brand = $con->prepare("UPDATE `brands` SET brand_title=? WHERE brand_id = ? ");
+    $update_brand->bind_param("si", $brand_title, $brand_id);
+    if($update_brand->execute()){
+      $_SESSION['show_success'] = true;
+      header("Location: view_brand.php");
+      exit();
+  
+    }else{
+      header("Location: view_brand.php");
+      exit();    
+    }
+
+  }
+
+
 
 }
 ?>
@@ -54,7 +108,7 @@ if(isset($_GET['edit_brand'])){
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.php">Qjen Admin</a>
+          <a class="navbar-brand" href="index.php"><?php echo $username?> Admin</a>
         </div>
         <div
           style="
@@ -83,31 +137,41 @@ if(isset($_GET['edit_brand'])){
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
-            <li>
-              <a class="" href="add_products.php"
-                ><i class="fa fa-desktop fa-3x"></i>Add products</a
-              >
-            </li>
+            <?php
+            if($_SESSION['role']==="admin"){
+              echo "<li><a class='' href='add_products.php'><i class='fa fa-desktop fa-3x'></i>Add products</a>
+            </li>";
+            }
+
+            ?>
             <li>
               <a href="view_products.php"
                 ><i class="fa fa-qrcode fa-3x"></i> View Products</a
               >
             </li>
-            <li>
-              <a class="active-menu" href="insert_category.php"
-                ><i class="fa fa-chevron-down fa-3x"></i> Add Categories</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a href='insert_category.php'
+                ><i class='fa fa-chevron-down fa-3x'></i> Add Categories</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_category.php"
                 ><i class="fa fa-check-circle fa-3x"></i> View Categories</a
               >
             </li>
-            <li>
-              <a href="insert_brand.php"
-                ><i class="fa fa-bell-o fa-3x"></i> Add Brands</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a class='' href='insert_brand.php'
+                ><i class='fa fa-bell-o fa-3x'></i> Add Brands</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_brand.php"
                 ><i class="fa fa-bar-chart-o fa-3x"></i> View Brands</a
@@ -128,55 +192,36 @@ if(isset($_GET['edit_brand'])){
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
-            <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "<li><a href='view_user.php'><i class='fa fa-rocket fa-3x'></i> View Users</a
               >
-            </li>
-            <li>
-              <a href="form.php"><i class="fa fa-edit fa-3x"></i> Forms </a>
-            </li>
-
-            <li>
-              <a href="#"
-                ><i class="fa fa-sitemap fa-3x"></i> Multi-Level Dropdown<span
-                  class="fa arrow"
-                ></span
-              ></a>
-              <ul class="nav nav-second-level">
-                <li>
-                  <a href="#">Second Level Link</a>
-                </li>
-                <li>
-                  <a href="#">Second Level Link</a>
-                </li>
-                <li>
-                  <a href="#"
-                    >Second Level Link<span class="fa arrow"></span
-                  ></a>
-                  <ul class="nav nav-third-level">
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a href="blank.php"
-                ><i class="fa fa-square-o fa-3x"></i> Blank Page</a
-              >
-            </li>
+            </li>";
+            }
+            ?>  
+      
           </ul>
         </div>
       </nav>
-      <!-- /. NAV SIDE  -->
+      <!-- /. NAV SIDE
+      <?php
+            if($_SESSION['role']=== "admin"){
+              echo "   <li>
+              <a href='add_member.php'
+                ><i class='fa-solid fa-people-arrows fa-3x'></i> Add Members</a
+              >
+            </li'";
+            }
+            ?>
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "     <li>
+              <a href='view_member.php'
+                ><i class='fa-solid fa-people-line fa-3x'></i> View Members</a
+              >
+            </li>";
+            }
+            ?>  -->
       <div id="page-wrapper">
         <div id="page-inner">
           <div class="row">
@@ -187,6 +232,13 @@ if(isset($_GET['edit_brand'])){
           </div>
           <!-- /. ROW  -->
           <hr />
+
+              <!--alert starts  -->
+              <div id="success-alert" class="success-alert">Brand updated successfully!</div>
+                <div id="error-alert" class="error-alert">Brand already exist!</div>
+                <div id="field-error-alert" class="field-error-alert">Field cannot be empty!</div>
+             <!-- alert ends -->
+
           <!-- start coding here -->
            <div>
             <form action="" method="post">
@@ -200,7 +252,7 @@ if(isset($_GET['edit_brand'])){
                       autocomplete="off"
                     />
                   </div>
-                  <input type="submit" name="edit_brand" class="btn btn-primary">
+                  <input type="submit" name="edit_brand" class="btn btn-primary insert-btn">
             </form>
            </div>
           <!-- /. ROW  -->
@@ -222,24 +274,49 @@ if(isset($_GET['edit_brand'])){
     <script src="assets/js/morris/morris.js"></script>
     <!-- CUSTOM SCRIPTS -->
     <script src="assets/js/custom.js"></script>
+
+    <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showFieldErrorAlert() {
+        const alertBox = document.getElementById('field-error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+
+        // Trigger from PHP using session
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_field_error']) && $_SESSION['show_field_error']) {
+            echo "showFieldErrorAlert();";
+            unset($_SESSION['show_field_error']); // remove flag
+        }
+        ?>
+  </script>
   </body>
 </html>
-
-<!-- editing brand -->
-
-<?php
-if(isset($_POST['edit_brand'])){
-    $brand_title = $_POST['brand_title'];
-    $update_brand = "update `brands` set brand_title = '$brand_title' where brand_id = $brand_id";
-
-    $result_update = mysqli_query($con, $update_brand);
-    if($result_update){
-        echo "<script>alert('Brand updated successfully')</script>";
-        echo "<script>window.open('view_brand.php','_self')</script>";
-
-    }else{
-        echo "<script>alert('There was a problem updating the brand')</script>";
-    }
-
-}
-?>

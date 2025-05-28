@@ -1,5 +1,17 @@
 <?php
 include("../includes/connect.php");
+session_start();
+
+  
+if(!isset($_SESSION['username']) || $_SESSION['role'] !=="admin" && $_SESSION['role'] !=="sub_admin"){
+  session_unset();
+  session_destroy();
+  header("Location: ../user_area/user_login.php");
+}
+
+$_SESSION['username'];
+$username = $_SESSION['username'];
+
 
 // fetching the number of products
 $products_sql = "SELECT * FROM `products`";
@@ -33,6 +45,9 @@ $brands_row = mysqli_num_rows($brands_result);
     <!-- CUSTOM STYLES-->
     <link href="assets/css/custom.css" rel="stylesheet" />
     <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
     
 
     <!-- GOOGLE FONTS-->
@@ -62,7 +77,7 @@ $brands_row = mysqli_num_rows($brands_result);
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">Qjen Admin</a>
+          <a class="navbar-brand" href="index.html"><?php echo $username?> Admin</a>
         </div>
         <div
           style="
@@ -91,31 +106,41 @@ $brands_row = mysqli_num_rows($brands_result);
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
-            <li>
-              <a class="" href="add_products.php"
-                ><i class="fa fa-desktop fa-3x"></i>Add products</a
-              >
-            </li>
+            <?php
+            if($_SESSION['role']==="admin"){
+              echo "<li><a class='' href='add_products.php'><i class='fa fa-desktop fa-3x'></i>Add products</a>
+            </li>";
+            }
+
+            ?>
             <li>
               <a href="view_products.php"
                 ><i class="fa fa-qrcode fa-3x"></i> View Products</a
               >
             </li>
-            <li>
-              <a href="insert_category.php"
-                ><i class="fa fa-chevron-down fa-3x"></i> Add Categories</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a href='insert_category.php'
+                ><i class='fa fa-chevron-down fa-3x'></i> Add Categories</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_category.php"
                 ><i class="fa fa-check-circle fa-3x"></i> View Categories</a
               >
             </li>
-            <li>
-              <a href="insert_brand.php"
-                ><i class="fa fa-bell-o fa-3x"></i> Add Brands</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a class='' href='insert_brand.php'
+                ><i class='fa fa-bell-o fa-3x'></i> Add Brands</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_brand.php"
                 ><i class="fa fa-bar-chart-o fa-3x"></i> View Brands</a
@@ -136,11 +161,31 @@ $brands_row = mysqli_num_rows($brands_result);
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
-            <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "<li><a href='view_user.php'><i class='fa fa-rocket fa-3x'></i> View Users</a
               >
-            </li>
+            </li>";
+            }
+            ?>  
+              <?php
+            if($_SESSION['role']=== "admin"){
+              echo "   <li>
+              <a href='add_member.php'
+                ><i class='fa-solid fa-people-arrows fa-3x'></i> Add Members</a
+              >
+            </li'";
+            }
+            ?>
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "     <li>
+              <a href='view_member.php'
+                ><i class='fa-solid fa-people-line fa-3x'></i> View Members</a
+              >
+            </li>";
+            }
+            ?>
           </ul>
         </div>
       </nav>
@@ -149,7 +194,7 @@ $brands_row = mysqli_num_rows($brands_result);
         <div id="page-inner">
           <div class="row">
             <div class="col-md-12">
-              <h2>Admin Dashboard</h2>
+              <h2>Cancelled Orders</h2>
               <h5>Love to see you back.</h5>
             </div>
           </div>
@@ -165,29 +210,32 @@ $brands_row = mysqli_num_rows($brands_result);
                         <div class="panel-body">
                             <div class="table-responsive">
                                 <table class="table table-striped table-bordered table-hover">
-                         
-
                                 <?php
-                                
-                                
+                                  $cancelled = 'Cancelled';
                               // fetching of orders
                               $order_sql = "Select * from `user_orders` where status = 'Cancelled' ORDER BY order_date DESC";
                               $order_result = mysqli_query($con, $order_sql);
-                              if(mysqli_num_rows($order_result)==0){
-                                echo "<div class='text-center text-danger'>No processing orders yet!</div>";
+                              $order_sql = $con->prepare("SELECT * FROM `user_orders` where status = ? ORDER BY order_date DESC");
+                              $order_sql->bind_param("s", $cancelled);
+                              $order_sql->execute();
+                              $order_result = $order_sql->get_result();
+
+                              if($order_result->num_rows ===0){
+                                echo "<div class='text-center text-danger'>No cancelled orders yet!</div>";
                               }else{
                                 echo "  <thead>
                                 <tr>
-                                    <th class='text-center'>Order id</th>
+                                    <th class='text-center'>Id</th>
                                     <th class='text-center'>Invoice</th>
                                     <th class='text-center'>Date / Time</th>
-                                    <th class='text-center'>Total products</th>
-                                    <th class='text-center'>Total price</th>
+                                    <th class='text-center'>Products</th>
+                                    <th class='text-center'>Price</th>
                                     <th class='text-center'>Status</th>
+                                    <th class='text-center'>Reason by admin</th>
+                                    <th class='text-center'>Reason by user</th>
                                     <th class='text-center'>Action</th>
                                 </tr>
-                            </thead>";
-                              
+                            </thead>"; 
                                 while($order_row = mysqli_fetch_assoc($order_result)){
                                   $invoice_number = $order_row['invoice_number'];
                                   $order_id = $order_row['order_id'];
@@ -195,7 +243,8 @@ $brands_row = mysqli_num_rows($brands_result);
                                   $total_price = $order_row['total_price'];
                                   $order_date = $order_row['order_date'];
                                   $status = $order_row['status'];
-
+                                  $cancel_reason = $order_row['cancel_reason_admin'];
+                                  $cancel_reason_user = $order_row['cancel_reason_user'];
                                 ?>
                                   
                                     <tbody>
@@ -204,8 +253,10 @@ $brands_row = mysqli_num_rows($brands_result);
                                             <td class="text-center"><?php echo $invoice_number?></td>
                                             <td class="text-center"><?php echo $order_date?></td>
                                             <td class="text-center"><?php echo $total_products?></td>
-                                            <td class="text-center"><?php echo $total_price?></td>
+                                            <td class="text-center"><i class='fas fa-cedi-sign'></i><?php echo $total_price?></td>
                                             <td class="text-center"><?php echo $status?></td>
+                                            <td class="text-center"><?php echo $cancel_reason?></td>
+                                            <td class="text-center"><?php echo $cancel_reason_user?></td>
                                             <td class="text-center"><a href="view_product_detail.php?order_id=<?php echo $order_id?>" class=" btn btn-success text-white text-decoration-none">View</a></td>
                                         </tr>
                                     </tbody>
@@ -217,7 +268,6 @@ $brands_row = mysqli_num_rows($brands_result);
                             </div>
                         </div>
                     </div>
-    
        
         <!-- /. PAGE INNER  -->
       </div>

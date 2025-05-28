@@ -9,12 +9,10 @@ session_start();
 // updating the quantity
 if(isset($_POST['update_product_quantity'])){
     $update_value = $_POST['update_quantity'];
-    // echo $update_value;
     $update_id = $_POST['update_quantity_id'];
-    // echo $update_id;
-    $update_quantity_query = mysqli_query($con, "update `cart_details` set quantity = $update_value where product_id = $update_id");
-    // echo "updated successfully";
-    if($update_quantity_query){
+    $update_quantity_query = $con->prepare("UPDATE `cart_details` SET quantity = ? WHERE product_id = ?");
+    $update_quantity_query->bind_param("si", $update_value, $update_id);
+    if($update_quantity_query->execute()){
         header('location:cart.php');
     }
 }
@@ -22,8 +20,19 @@ if(isset($_POST['update_product_quantity'])){
 // removing product in cart
 if(isset($_GET['remove'])){
     $remove_id = $_GET['remove'];
-    // echo $remove_id;
-    mysqli_query($con, "Delete from `cart_details` where product_id=$remove_id");
+    // $remove_sql = "Delete from `cart_details` where product_id=$remove_id";
+    // $remove_result = mysqli_query($con, $remove_sql);
+    $remove_sql = $con->prepare("DELETE FROM `cart_details` WHERE product_id = ?");
+    $remove_sql->bind_param("i", $remove_id);
+    if($remove_sql->execute()){
+        $_SESSION['remove_cart'] = true;
+        header("Location: cart.php");
+        exit();
+
+    }else{
+
+    }
+    
 
 }
 ?>
@@ -46,7 +55,9 @@ if(isset($_GET['remove'])){
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
 
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
 
     <!-- Libraries Stylesheet -->
     <link href="lib/animate/animate.min.css" rel="stylesheet">
@@ -85,7 +96,7 @@ if(isset($_GET['remove'])){
                     </div>
                 </div>
                 <div class="d-inline-flex align-items-center d-block d-lg-none">
-                    <a href="" class="btn px-0 ml-2">
+                    <a href="cart.php" class="btn px-0 ml-2">
                         <i class="fas fa-shopping-cart text-dark"></i>
                         <span class="badge text-dark border border-dark rounded-circle" style="padding-bottom: 2px;"><?php cart_item(); ?></span>
                     </a>
@@ -174,6 +185,10 @@ if(isset($_GET['remove'])){
         </div>
     </div>
     <!-- Navbar End -->
+     
+    <!-- alert starts -->
+    <div id="remove-cart" class="remove-cart">Product removed!</div>
+    <!-- alert ends -->
 
 
     <!-- Breadcrumb Start -->
@@ -201,11 +216,15 @@ if(isset($_GET['remove'])){
                   global $con;
                   $get_ip_add = getIPAddress();
                   $total_price = 0;
-                  $cart_query= "Select * from `cart_details` where ip_address='$get_ip_add'";
-                  $result = mysqli_query($con, $cart_query);
+                //   $cart_query= "Select * from `cart_details` where ip_address='$get_ip_add'";
+                //   $result = mysqli_query($con, $cart_query);
                   // counting the rows
-                  $result_count = mysqli_num_rows($result);
-                  if($result_count>0){
+                //   $result_count = mysqli_num_rows($result);
+                $cart_query = $con->prepare("SELECT * FROM `cart_details` WHERE ip_address = ?");
+                $cart_query->bind_param("s", $get_ip_add);
+                $cart_query->execute();
+                $result_count = $cart_query->get_result();
+                  if($result_count->num_rows > 0){
                     echo "<thead class='thead-dark'>
                         <tr>
                             <th>Products</th>
@@ -216,13 +235,16 @@ if(isset($_GET['remove'])){
                         </tr>
                     </thead>
                     <tbody class='align-middle'>";
-                    while($row = mysqli_fetch_array($result)){
+                    while($row = $result_count->fetch_array()){
                         $product_id= $row['product_id'];
                         $quantity = $row['quantity'];
-                        $select_products= "Select * from `products` where product_id = '$product_id'";
-
-                        $result_products = mysqli_query($con, $select_products);
-                        while($row_product_price = mysqli_fetch_array($result_products)){
+                        // $select_products= "Select * from `products` where product_id = '$product_id'";
+                        // $result_products = mysqli_query($con, $select_products);
+                        $select_products = $con->prepare("SELECT * FROM `products` WHERE product_id = ?");
+                        $select_products->bind_param("i", $product_id);
+                        $select_products->execute();
+                        $select_products_result = $select_products->get_result();
+                        while($row_product_price = $select_products_result->fetch_array()){
                             // product price is the sum of all the prices of the products
                           $product_price = array($row_product_price['product_price']);
                           $price_table= $row_product_price['product_price'];
@@ -235,7 +257,7 @@ if(isset($_GET['remove'])){
                     
                         <tr>
                             <td class="align-middle cart_table_image"><img src="../admin_area/product_images/<?php echo $product_image1?>" alt="" style="width: 50px;"><?php echo $product_title ?> </td>
-                            <td class="align-middle">$<?php echo $price_table?></td>
+                            <td class="align-middle"><i class='fas fa-cedi-sign'></i><?php echo $price_table?></td>
                             <td class="align-middle">
                             <form action="" method="post">
                             <input type="hidden" name="update_quantity_id" value="<?php echo $product_id; ?>">
@@ -247,8 +269,8 @@ if(isset($_GET['remove'])){
                                 </div>
                                 </form>
                             </td>
-                            <td class="align-middle">$<?php echo $product_row_price?></td>
-                            <td class="align-middle"><a href="cart.php?remove=<?php echo $product_id?>" onclick="return confirm('Are you sure you want to delete this product')"><button class="btn btn-sm btn-danger"><i class="fa fa-times"></i></button></a></td>
+                            <td class="align-middle"><i class='fas fa-cedi-sign'></i><?php echo $product_row_price?></td>
+                            <td class="align-middle"><a href="cart.php?remove=<?php echo $product_id?>"><button class="btn btn-sm btn-danger"><i class="fa fa-times"></i></button></a></td>
                         </tr>
                         
                     <?php
@@ -274,7 +296,7 @@ if(isset($_GET['remove'])){
                     <div class="pt-2">
                         <div class="d-flex justify-content-between mt-2">
                             <h5>Total</h5>
-                            <h5 id="totalPrice">$<?php echo $total_price?></h5>
+                            <h5 id="totalPrice"><i class='fas fa-cedi-sign'></i><?php echo $total_price?></h5>
                         </div>
                         <?php
                    $get_ip_add = getIPAddress();
@@ -298,6 +320,7 @@ if(isset($_GET['remove'])){
     <!-- Cart End -->
 
 
+   
     <!-- Footer Start -->
     <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
@@ -318,7 +341,7 @@ if(isset($_GET['remove'])){
                             <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-5">
+                    <div class="col-md-4 mb-3">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
                             <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
@@ -394,6 +417,21 @@ if(isset($_GET['remove'])){
             }
         }
     </script>
+      <script>
+        function showRemoveCartAlert() {
+        const alertBox = document.getElementById('remove-cart');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        <?php
+        if (isset($_SESSION['remove_cart']) && $_SESSION['remove_cart']) {
+            echo "showRemoveCartAlert();";
+            unset($_SESSION['remove_cart']); // remove flag
+        }
+        ?>
+  </script>
 </body>
 
 </html>

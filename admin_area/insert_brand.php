@@ -1,21 +1,42 @@
 <?php
 include("../includes/connect.php");
+session_start();
+
+  
+if(!isset($_SESSION['username']) || $_SESSION['role'] !=="admin" && $_SESSION['role'] !=="sub_admin"){
+  session_unset();
+  session_destroy();
+  header("Location: ../user_area/user_login.php");
+}
+
+$_SESSION['username'];
+$username = $_SESSION['username'];
 
 if(isset($_POST['insert_brand'])){
   $brand_title = $_POST['brand_title']; 
 
-  // select data from database
-  $select_query = "Select * from `brands` where brand_title= '$brand_title'";
-  $result_select= mysqli_query($con, $select_query);
-  $number = mysqli_num_rows($result_select);
-  if($number>0){
-      echo "<script>alert('Brand already exist')</script>";
+  if($brand_title == ''){
+    $_SESSION['show_field_error'] = true;
+    header("Location: insert_brand.php");
+    exit();
+  }
+
+  $select_query = $con->prepare("SELECT * FROM `brands` WHERE brand_title=?");
+  $select_query->bind_param("s", $brand_title);
+  $select_query->execute();
+  $number = $select_query->get_result();
+  if($number->num_rows >0){
+    $_SESSION['show_error'] = true;
+    header("Location: insert_brand.php");
+    exit();
 
   }else{
-      $insert_query = "insert into `brands` (brand_title) values ('$brand_title')";
-      $result = mysqli_query($con, $insert_query);
-      if($result){
-          echo "<script>alert('Brand added successfully')</script>";
+      $insert_query = $con->prepare("INSERT INTO `brands` (brand_title) VALUES (?)");
+      $insert_query->bind_param("s", $brand_title);
+      if($insert_query->execute()){
+        $_SESSION['show_success'] = true;
+        header("Location: insert_brand.php");
+        exit();
       }
   }
 
@@ -43,6 +64,8 @@ if(isset($_POST['insert_brand'])){
       type="text/css"
     />
     <link rel="stylesheet" href="assets/css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
   </head>
   <body>
     <div id="wrapper">
@@ -63,7 +86,7 @@ if(isset($_POST['insert_brand'])){
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.php">Qjen Admin</a>
+          <a class="navbar-brand" href="index.php"><?php echo $username?> Admin</a>
         </div>
         <div
           style="
@@ -92,31 +115,41 @@ if(isset($_POST['insert_brand'])){
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
-            <li>
-              <a class="" href="add_products.php"
-                ><i class="fa fa-desktop fa-3x"></i>Add products</a
-              >
-            </li>
+            <?php
+            if($_SESSION['role']==="admin"){
+              echo "<li><a class='' href='add_products.php'><i class='fa fa-desktop fa-3x'></i>Add products</a>
+            </li>";
+            }
+
+            ?>
             <li>
               <a href="view_products.php"
                 ><i class="fa fa-qrcode fa-3x"></i> View Products</a
               >
             </li>
-            <li>
-              <a href="insert_category.php"
-                ><i class="fa fa-chevron-down fa-3x"></i> Add Categories</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a href='insert_category.php'
+                ><i class='fa fa-chevron-down fa-3x'></i> Add Categories</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_category.php"
                 ><i class="fa fa-check-circle fa-3x"></i> View Categories</a
               >
             </li>
-            <li>
-              <a class="active-menu" href="insert_brand.php"
-                ><i class="fa fa-bell-o fa-3x"></i> Add Brands</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a class='active-menu' href='insert_brand.php'
+                ><i class='fa fa-bell-o fa-3x'></i> Add Brands</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_brand.php"
                 ><i class="fa fa-bar-chart-o fa-3x"></i> View Brands</a
@@ -137,11 +170,31 @@ if(isset($_POST['insert_brand'])){
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
-            <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "<li><a href='view_user.php'><i class='fa fa-rocket fa-3x'></i> View Users</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
+              <?php
+            if($_SESSION['role']=== "admin"){
+              echo "   <li>
+              <a href='add_member.php'
+                ><i class='fa-solid fa-people-arrows fa-3x'></i> Add Members</a
+              >
+            </li'";
+            }
+            ?>
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "     <li>
+              <a href='view_member.php'
+                ><i class='fa-solid fa-people-line fa-3x'></i> View Members</a
+              >
+            </li>";
+            }
+            ?> 
           </ul>
         </div>
       </nav>
@@ -156,6 +209,12 @@ if(isset($_POST['insert_brand'])){
           </div>
           <!-- /. ROW  -->
           <hr />
+               <!--alert starts  -->
+               <div id="success-alert" class="success-alert">Brand added successfully!</div>
+                <div id="error-alert" class="error-alert">Brand already exist!</div>
+                <div id="field-error-alert" class="field-error-alert">Field cannot be empty!</div>
+             <!-- alert ends -->
+              
           <!-- start coding here -->
            <div>
             <form action="" method="post">
@@ -164,12 +223,12 @@ if(isset($_POST['insert_brand'])){
                     <input
                       type="text"
                       class="form-control"
-                      placeholder="Insert brand name"
+                      placeholder="brand name"
                       name="brand_title"
                       autocomplete="off"
                     />
                   </div>
-                  <input type="submit" class="btn btn-primary" name="insert_brand">
+                  <input type="submit" class="btn btn-primary insert-btn" name="insert_brand">
             </form>
            </div>
           <!-- /. ROW  -->
@@ -191,5 +250,48 @@ if(isset($_POST['insert_brand'])){
     <script src="assets/js/morris/morris.js"></script>
     <!-- CUSTOM SCRIPTS -->
     <script src="assets/js/custom.js"></script>
+    <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showFieldErrorAlert() {
+        const alertBox = document.getElementById('field-error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+
+        // Trigger from PHP using session
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_field_error']) && $_SESSION['show_field_error']) {
+            echo "showFieldErrorAlert();";
+            unset($_SESSION['show_field_error']); // remove flag
+        }
+        ?>
+  </script>
   </body>
 </html>

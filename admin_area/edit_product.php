@@ -1,12 +1,28 @@
 <?php
 
 include("../includes/connect.php");
+ob_start(); 
+session_start();
+
+  
+if(!isset($_SESSION['username']) || $_SESSION['role'] !=="admin" && $_SESSION['role'] !=="sub_admin"){
+  session_unset();
+  session_destroy();
+  header("Location: ../user_area/user_login.php");
+}
+
+$_SESSION['username'];
+$username = $_SESSION['username'];
+
 
 if(isset($_GET['edit_product'])){
     $edit_id = $_GET['edit_product'];
-    $get_data = "Select * from `products` where product_id = $edit_id";
-    $result = mysqli_query($con, $get_data);
-    $row = mysqli_fetch_assoc($result);
+    $get_data = $con->prepare("SELECT * FROM `products` WHERE product_id = ?");
+    $get_data->bind_param("i", $edit_id);
+    $get_data->execute();
+    $result = $get_data->get_result();
+    $row = $result->fetch_assoc();
+
     $product_title = $row['product_title'];
     $product_description = $row['product_description'];
     $product_keywords = $row['product_keywords'];
@@ -18,15 +34,21 @@ if(isset($_GET['edit_product'])){
     $product_price = $row['product_price'];
 
     // fetching the name of the category
-    $select_category = "Select * from `categories` where category_id = $category_id";
-    $result_category = mysqli_query($con, $select_category);
-    $row_category = mysqli_fetch_assoc($result_category);
+    // $select_category = "Select * from `categories` where category_id = $category_id";
+    $select_category = $con->prepare("SELECT * FROM `categories` WHERE category_id = ?");
+    $select_category->bind_param("i", $category_id);
+    $select_category->execute();
+    $result_category = $select_category->get_result();
+    $row_category = $result_category->fetch_assoc();
     $category_title = $row_category['category_title'];
 
     // fetching the name of the category
-    $select_brand = "Select * from `brands` where brand_id = $brand_id";
-    $result_brand = mysqli_query($con, $select_brand);
-    $row_brand = mysqli_fetch_assoc($result_brand);
+
+    $select_brand = $con->prepare("SELECT * FROM `brands` WHERE brand_id = ?");
+    $select_brand->bind_param("i", $brand_id);
+    $select_brand->execute();
+    $result_brand = $select_brand->get_result();
+    $row_brand = $result_brand->fetch_assoc();
     $brand_title = $row_brand['brand_title'];
 }
 ?>
@@ -70,7 +92,7 @@ if(isset($_GET['edit_product'])){
             <span class="fa fa-bar"></span>
             <span class="fa fa-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.php">Qjen Admin</a>
+          <a class="navbar-brand" href="index.php"><?php echo $username?> Admin</a>
         </div>
         <div
           style="
@@ -99,31 +121,41 @@ if(isset($_GET['edit_product'])){
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
-            <li>
-              <a class="active-menu" href="add_products.php"
-                ><i class="fa fa-desktop fa-3x"></i>Add products</a
-              >
-            </li>
+            <?php
+            if($_SESSION['role']==="admin"){
+              echo "<li><a class='' href='add_products.php'><i class='fa fa-desktop fa-3x'></i>Add products</a>
+            </li>";
+            }
+
+            ?>
             <li>
               <a href="view_products.php"
                 ><i class="fa fa-qrcode fa-3x"></i> View Products</a
               >
             </li>
-            <li>
-              <a href="insert_category.php"
-                ><i class="fa fa-chevron-down fa-3x"></i> Add Categories</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a href='insert_category.php'
+                ><i class='fa fa-chevron-down fa-3x'></i> Add Categories</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_category.php"
                 ><i class="fa fa-check-circle fa-3x"></i> View Categories</a
               >
             </li>
-            <li>
-              <a href="insert_brand.php"
-                ><i class="fa fa-bell-o fa-3x"></i> Add Brands</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a class='' href='insert_brand.php'
+                ><i class='fa fa-bell-o fa-3x'></i> Add Brands</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_brand.php"
                 ><i class="fa fa-bar-chart-o fa-3x"></i> View Brands</a
@@ -140,55 +172,35 @@ if(isset($_GET['edit_product'])){
               >
             </li>
             <li>
-              <a class="active-menu" href="cancelled_order.php"
+              <a class="" href="cancelled_order.php"
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
-            <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "<li><a href='view_user.php'><i class='fa fa-rocket fa-3x'></i> View Users</a
               >
-            </li>
-            <li>
-              <a href="form.php"><i class="fa fa-edit fa-3x"></i> Forms </a>
-            </li>
-
-            <li>
-              <a href="#"
-                ><i class="fa fa-sitemap fa-3x"></i> Multi-Level Dropdown<span
-                  class="fa arrow"
-                ></span
-              ></a>
-              <ul class="nav nav-second-level">
-                <li>
-                  <a href="#">Second Level Link</a>
-                </li>
-                <li>
-                  <a href="#">Second Level Link</a>
-                </li>
-                <li>
-                  <a href="#"
-                    >Second Level Link<span class="fa arrow"></span
-                  ></a>
-                  <ul class="nav nav-third-level">
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a href="blank.php"
-                ><i class="fa fa-square-o fa-3x"></i> Blank Page</a
+            </li>";
+            }
+            ?>  
+              <?php
+            if($_SESSION['role']=== "admin"){
+              echo "   <li>
+              <a href='add_member.php'
+                ><i class='fa-solid fa-people-arrows fa-3x'></i> Add Members</a
               >
-            </li>
+            </li'";
+            }
+            ?>
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "     <li>
+              <a href='view_member.php'
+                ><i class='fa-solid fa-people-line fa-3x'></i> View Members</a
+              >
+            </li>";
+            }
+            ?>
           </ul>
         </div>
       </nav>
@@ -204,6 +216,12 @@ if(isset($_GET['edit_product'])){
           <!-- /. ROW  -->
           <hr />
           <!-- /. ROW  -->
+
+                   <!--alert starts  -->
+                  <div id="success-alert" class="success-alert">Product updated successfully!</div>
+                <div id="error-alert" class="error-alert">Error updating product!</div>
+                <div id="field-error-alert" class="field-error-alert">Fill all fields!</div>
+             <!-- alert ends -->
 
           <!-- /. ROW  -->
           <div class="">
@@ -297,7 +315,7 @@ if(isset($_GET['edit_product'])){
                   autocomplete="off"
                 />
               </div>
-              <input type="submit" name="edit_product" class="btn btn-primary" value="Edit product">
+              <input type="submit" name="edit_product" class="btn btn-primary insert-btn" value="Edit product">
             </form>
           </div>
 
@@ -317,6 +335,49 @@ if(isset($_GET['edit_product'])){
     <script src="assets/js/jquery.metisMenu.js"></script>
     <!-- CUSTOM SCRIPTS -->
     <script src="assets/js/custom.js"></script>
+    <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showFieldErrorAlert() {
+        const alertBox = document.getElementById('field-error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+
+        // Trigger from PHP using session
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_field_error']) && $_SESSION['show_field_error']) {
+            echo "showFieldErrorAlert();";
+            unset($_SESSION['show_field_error']); // remove flag
+        }
+        ?>
+  </script>
   </body>
 </html>
 
@@ -348,25 +409,32 @@ if(isset($_POST['edit_product'])){
     // checking for the empty fields
     // this checking of the empty fields will not work because of the required properties given in the input fields
     if($product_title == '' or $product_desc== '' or $product_keywords == '' or $product_category =='' or $product_brand == '' or $product_image1 == '' or $product_image2 == '' or $product_image3 == '' or $product_price == ''){
-        echo "<script>alert('Please fill all the fields')</script>";
+      $_SESSION['show_field_error'] = true;
+      header("Location: edit_product.php?edit_product=$edit_id");
+      exit();
     }else{
         move_uploaded_file($temp_image1 , "./product_images/$product_image1");
         move_uploaded_file($temp_image2 , "./product_images/$product_image2");
         move_uploaded_file($temp_image3 , "./product_images/$product_image3");
 
         // query to update the data
-        $update_product = "update `products` set product_title = '$product_title', product_description = '$product_desc', product_keywords='$product_keywords', category_id = '$product_category', brand_id = '$product_brand', product_image1= '$product_image1', product_image2= '$product_image2', product_image3 = '$product_image3', product_price = '$product_price', date= NOW() where product_id = $edit_id";
+        // $update_product = "update `products` set product_title = '$product_title', product_description = '$product_desc', product_keywords='$product_keywords', category_id = '$product_category', brand_id = '$product_brand', product_image1= '$product_image1', product_image2= '$product_image2', product_image3 = '$product_image3', product_price = '$product_price', date= NOW() where product_id = $edit_id";
 
-        $result_update = mysqli_query($con, $update_product);
-        if($result_update){
-            echo "<script>alert('Product updated successfully')</script>";
-            echo "<script>window.open('view_products.php','_self')</script>";
+        $update_product = $con->prepare("UPDATE `products` SET product_title = ?, product_description = ?, product_keywords=?, category_id =?,  brand_id =?, product_image1=?, product_image2=?, product_image3 =?, product_price = ?, date= NOW() WHERE product_id = ? ");
+        $update_product->bind_param("sssiisssii", $product_title, $product_desc, $product_keywords, $product_category, $product_brand, $product_image1, $product_image2, $product_image3, $product_price, $edit_id);
+
+        if($update_product->execute()){
+          $_SESSION['show_success'] = true;
+          header("Location: view_products.php");
+          exit();
 
         }else{
-            echo "<script>alert('There was a problem updating the product')</script>";
+          $_SESSION['show_error'] = true;
+
         }
     }
 }
 
 
 ?>
+<?php ob_end_flush(); ?>

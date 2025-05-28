@@ -5,17 +5,21 @@ include("../functions/common_function.php");
 
 @session_start();
 
-if(!isset($_SESSION['username'])){
-    echo "<script>window.open('user_login.php', '_self')</script>";
+if(!isset($_SESSION['username']) || $_SESSION['role'] !== "user"){
+    session_unset();
+    session_destroy();
+    header("Location: user_login.php");
 
 }
 
 // fetching the user_id 
 
 $username = $_SESSION['username'];
-$user_query = "Select * from users where username = '$username'";
-$user_result = mysqli_query($con, $user_query);
-$user_row = mysqli_fetch_assoc($user_result);
+$user_query = $con->prepare("SELECT * FROM users WHERE username = ?");
+$user_query->bind_param("s", $username);
+$user_query->execute();
+$user_result = $user_query->get_result();
+$user_row = $user_result->fetch_assoc();
 $user_id = $user_row['user_id'];
 ?>
 
@@ -37,7 +41,9 @@ $user_id = $user_row['user_id'];
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
 
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
 
     <!-- Libraries Stylesheet -->
     <link href="lib/animate/animate.min.css" rel="stylesheet">
@@ -119,6 +125,12 @@ $user_id = $user_row['user_id'];
     </div>
     <!-- Navbar End -->
 
+        <!-- alert starts -->
+        <div id="success-alert-cancel-order" class="success-alert-cancel-order">Cancel reason submitted successfully!</div>
+        <div id="success-alert" class="success-alert">Order placed successfully!</div>
+        <div id="error-alert" class="error-alert">Fill select all fields!</div>
+    <!-- alert ends -->
+
     <!-- profile starts -->
     <div class="container emp-profile">
             <form method="post">
@@ -137,9 +149,12 @@ $user_id = $user_row['user_id'];
 
                             <?php
                             $username= $_SESSION['username'];
-                            $user_query = "Select * from `users` where username = '$username'";
-                            $user_result = mysqli_query($con, $user_query);
-                            $row_data = mysqli_fetch_array($user_result);
+
+                            $user_query = $con->prepare("SELECT * FROM users WHERE username = ?");
+                            $user_query->bind_param("s", $username);
+                            $user_query->execute();
+                            $user_result = $user_query->get_result();
+                            $row_data = $user_result->fetch_array();
                             $user_email = $row_data['user_email'];
                             echo "<h6>$user_email</h6>";
                             ?>
@@ -162,9 +177,11 @@ $user_id = $user_row['user_id'];
                 <div class="row">
                     <div class="col-md-4">
                         <div class="profile-work">
-                            <p>ACCOUNT LINKS</p>
-                            <a href="edit_account.php">EDIT ACCOUNT</a><br/>
-                            <a href="logout.php" onclick="return confirm('Are you sure you want to logout?')">LOGOUT</a>
+                            <p class="account-link-head">ACCOUNT LINKS</p>
+                            <div class="account-links">
+                            <a href="password_reset.php">CHANGE PASSWORD</a><br/>
+                            <a href="logout.php">LOGOUT</a>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-8">
@@ -173,46 +190,49 @@ $user_id = $user_row['user_id'];
                                                     
                             <?php
                             $username= $_SESSION['username'];
-                            $user_query = "Select * from `users` where username = '$username'";
-                            $user_result = mysqli_query($con, $user_query);
-                            $row_data = mysqli_fetch_array($user_result);
+                              $user_query = $con->prepare("SELECT * FROM users WHERE username = ?");
+                            $user_query->bind_param("s", $username);
+                            $user_query->execute();
+                            $user_result = $user_query->get_result();
+                            $row_data = $user_result->fetch_array();
+
                             $username = $row_data['username'];
                             $user_email = $row_data['user_email'];
                             $user_phone_number = $row_data['user_phone_number'];
                             $user_address = $row_data['user_address'];
                             echo "
                                         <div class='row'>
-                                            <div class='col-md-6'>
+                                            <div class='col-md-6 about-me'>
                                                 <label>Username</label>
                                             </div>
-                                            <div class='col-md-6'>
+                                            <div class='col-md-6 about-me'>
                                                 <p>$username</p>
                                             </div>
                                         </div>
                             
                                           <div class='row'>
-                                            <div class='col-md-6'>
+                                            <div class='col-md-6 about-me'>
                                                 <label>Email</label>
                                             </div>
-                                            <div class='col-md-6'>
+                                            <div class='col-md-6 about-me'>
                                                 <p>$user_email</p>
                                             </div>
                                         </div>
 
                                            <div class='row'>
-                                            <div class='col-md-6'>
+                                            <div class='col-md-6 about-me'>
                                                 <label>Phone</label>
                                             </div>
-                                            <div class='col-md-6'>
+                                            <div class='col-md-6 about-me'>
                                                 <p>$user_phone_number</p>
                                             </div>
                                         </div>
 
                                            <div class='row'>
-                                            <div class='col-md-6'>
+                                            <div class='col-md-6 about-me'>
                                                 <label>Address</label>
                                             </div>
-                                            <div class='col-md-6'>
+                                            <div class='col-md-6 about-me'>
                                                 <p>$user_address</p>
                                             </div>
                                         </div>
@@ -223,18 +243,20 @@ $user_id = $user_row['user_id'];
                             <table class="table table-responsive">
 
                             <?php
-                             $order_query = "Select * from user_orders where user_id =$user_id ORDER BY order_date DESC";
-                             $order_result = mysqli_query($con, $order_query);
-                             if(mysqli_num_rows($order_result)==0){
+                            $order_query = $con->prepare("SELECT * FROM user_orders WHERE user_id = ? ORDER BY order_date DESC");
+                            $order_query->bind_param("i", $user_id);
+                            $order_query->execute();
+                            $order_result= $order_query->get_result();
+                             if($order_result->num_rows ==0){
                                 echo "<div class='text-dark text-center m-3'>You have no orders yet</div>";
 
 
                              }else{
                                 echo "<thead>
                                     <tr class='text-center'>
-                                    <th scope='col'>Order Id</th>
-                                    <th scope='col'>Total products</th>
-                                    <th scope='col'>Total price</th>
+                                    <th scope='col'>Id</th>
+                                    <th scope='col'>Products</th>
+                                    <th scope='col'>Price</th>
                                     <th scope='col'>Date</th>
                                     <th scope='col'>Status</th>
                                     <th scope='col'>Action</th>
@@ -250,8 +272,8 @@ $user_id = $user_row['user_id'];
                                 echo "<tr>
                             <th scope='row' class='text-center'><span>#</span>$order_id</th>
                             <td class='text-center'>$total_products</td>
-                            <td class='text-center'>$total_price</td>
-                            <td class='text-center'>$order_date</td>
+                            <td class='text-center'><i class='fas fa-cedi-sign'></i>$total_price</td>
+                            <td class='text-center date-text'>$order_date</td>
                             <td class='text-center'>$status</td>
                             <td class='text-center'><a href='user_order_details.php?order_id=$order_id'>View</a></td>
                             </tr>";
@@ -271,8 +293,8 @@ $user_id = $user_row['user_id'];
         </div>
 
 
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
+  <!-- Footer Start -->
+  <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
@@ -291,7 +313,7 @@ $user_id = $user_row['user_id'];
                             <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-5">
+                    <div class="col-md-4 mb-3">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
                             <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
@@ -335,6 +357,34 @@ $user_id = $user_row['user_id'];
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+  </script>
 </body>
 
 </html>

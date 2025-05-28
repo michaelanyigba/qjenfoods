@@ -1,14 +1,67 @@
 <?php
 
 include("../includes/connect.php");
+session_start();
+
+
+  
+if(!isset($_SESSION['username']) || $_SESSION['role'] !=="admin" && $_SESSION['role'] !=="sub_admin"){
+  session_unset();
+  session_destroy();
+  header("Location: ../user_area/user_login.php");
+}
+
+$_SESSION['username'];
+$username = $_SESSION['username'];
+
 
 if(isset($_GET['edit_category'])){
     $category_id = $_GET['edit_category'];
-    $select_category = "Select * from `categories` where category_id = $category_id";
-    $result_category = mysqli_query($con, $select_category);
-    $row_category = mysqli_fetch_assoc($result_category);
+    $select_category = $con->prepare("SELECT * FROM `categories` WHERE category_id = ?");
+    $select_category->bind_param("i", $category_id);
+    $select_category->execute();
+    $select_result = $select_category->get_result();
+    $row_category = $select_result->fetch_assoc();
     $category_title = $row_category['category_title'];
 
+}
+
+// editing of product
+
+if(isset($_POST['edit_category'])){
+  $category_title = $_POST['category_title'];
+
+  if($category_title == ''){
+    $_SESSION['show_field_error'] = true;
+    header("Location: edit_category.php?edit_category=$category_id");
+    exit();
+  }
+
+  // $select_category_sql = "Select * from `categories` where category_title = '$category_title'";
+  // $select_category_result = mysqli_query($con, $select_category_sql);
+  // $category_number = mysqli_num_rows($select_category_result);
+  $select_category_sql = $con->prepare("SELECT * FROM `categories` WHERE category_title = ?");
+  $select_category_sql->bind_param("s", $category_title);
+  $select_category_sql->execute();
+  $select_category_sql_result = $select_category_sql->get_result();
+  if($select_category_sql_result->num_rows >0){
+    $_SESSION['show_error'] = true;
+    header("Location: edit_category.php?edit_category=$category_id");
+    exit();
+  }else{
+    $update_category = $con->prepare("UPDATE `categories` SET category_title =? WHERE category_id = ?");
+    $update_category->bind_param("si", $category_title, $category_id);
+    if($update_category->execute()){
+      $_SESSION['show_success'] = true;
+      header("Location: view_category.php");
+      exit();
+  
+    }else{
+      header("Location: view_category.php");
+      exit();
+    }
+
+  }
 }
 ?>
 
@@ -54,7 +107,7 @@ if(isset($_GET['edit_category'])){
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.php">Qjen Admin</a>
+          <a class="navbar-brand" href="index.php"><?php echo $username?> Admin</a>
         </div>
         <div
           style="
@@ -83,31 +136,41 @@ if(isset($_GET['edit_category'])){
                 ><i class="fa fa-dashboard fa-3x"></i> Dashboard</a
               >
             </li>
-            <li>
-              <a class="" href="add_products.php"
-                ><i class="fa fa-desktop fa-3x"></i>Add products</a
-              >
-            </li>
+            <?php
+            if($_SESSION['role']==="admin"){
+              echo "<li><a class='' href='add_products.php'><i class='fa fa-desktop fa-3x'></i>Add products</a>
+            </li>";
+            }
+
+            ?>
             <li>
               <a href="view_products.php"
                 ><i class="fa fa-qrcode fa-3x"></i> View Products</a
               >
             </li>
-            <li>
-              <a class="active-menu" href="insert_category.php"
-                ><i class="fa fa-chevron-down fa-3x"></i> Add Categories</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a href='insert_category.php'
+                ><i class='fa fa-chevron-down fa-3x'></i> Add Categories</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_category.php"
                 ><i class="fa fa-check-circle fa-3x"></i> View Categories</a
               >
             </li>
-            <li>
-              <a href="insert_brand.php"
-                ><i class="fa fa-bell-o fa-3x"></i> Add Brands</a
+            <?php
+            if($_SESSION['role'] === "admin"){
+              echo "<li>
+              <a class='' href='insert_brand.php'
+                ><i class='fa fa-bell-o fa-3x'></i> Add Brands</a
               >
-            </li>
+            </li>";
+            }
+            ?> 
             <li>
               <a href="view_brand.php"
                 ><i class="fa fa-bar-chart-o fa-3x"></i> View Brands</a
@@ -128,51 +191,31 @@ if(isset($_GET['edit_category'])){
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
-            <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "<li><a href='view_user.php'><i class='fa fa-rocket fa-3x'></i> View Users</a
               >
-            </li>
-            <li>
-              <a href="form.php"><i class="fa fa-edit fa-3x"></i> Forms </a>
-            </li>
-
-            <li>
-              <a href="#"
-                ><i class="fa fa-sitemap fa-3x"></i> Multi-Level Dropdown<span
-                  class="fa arrow"
-                ></span
-              ></a>
-              <ul class="nav nav-second-level">
-                <li>
-                  <a href="#">Second Level Link</a>
-                </li>
-                <li>
-                  <a href="#">Second Level Link</a>
-                </li>
-                <li>
-                  <a href="#"
-                    >Second Level Link<span class="fa arrow"></span
-                  ></a>
-                  <ul class="nav nav-third-level">
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                    <li>
-                      <a href="#">Third Level Link</a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a href="blank.php"
-                ><i class="fa fa-square-o fa-3x"></i> Blank Page</a
+            </li>";
+            }
+            ?>  
+              <?php
+            if($_SESSION['role']=== "admin"){
+              echo "   <li>
+              <a href='add_member.php'
+                ><i class='fa-solid fa-people-arrows fa-3x'></i> Add Members</a
               >
-            </li>
+            </li'";
+            }
+            ?>
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "     <li>
+              <a href='view_member.php'
+                ><i class='fa-solid fa-people-line fa-3x'></i> View Members</a
+              >
+            </li>";
+            }
+            ?>
           </ul>
         </div>
       </nav>
@@ -187,6 +230,13 @@ if(isset($_GET['edit_category'])){
           </div>
           <!-- /. ROW  -->
           <hr />
+
+           <!--alert starts  -->
+           <div id="success-alert" class="success-alert">Category updated successfully!</div>
+                <div id="error-alert" class="error-alert">Category already exist!</div>
+                <div id="field-error-alert" class="field-error-alert">Field cannot be empty!</div>
+             <!-- alert ends -->
+              
           <!-- start coding here -->
            <div>
             <form action="" method="post">
@@ -200,7 +250,7 @@ if(isset($_GET['edit_category'])){
                       autocomplete="off"
                     />
                   </div>
-                  <input type="submit" name="edit_category" class="btn btn-primary">
+                  <input type="submit" name="edit_category" class="btn btn-primary insert-btn">
             </form>
            </div>
           <!-- /. ROW  -->
@@ -222,24 +272,49 @@ if(isset($_GET['edit_category'])){
     <script src="assets/js/morris/morris.js"></script>
     <!-- CUSTOM SCRIPTS -->
     <script src="assets/js/custom.js"></script>
+
+    <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showFieldErrorAlert() {
+        const alertBox = document.getElementById('field-error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+
+        // Trigger from PHP using session
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_field_error']) && $_SESSION['show_field_error']) {
+            echo "showFieldErrorAlert();";
+            unset($_SESSION['show_field_error']); // remove flag
+        }
+        ?>
+  </script>
   </body>
 </html>
-
-<!-- editing category -->
-
-<?php
-if(isset($_POST['edit_category'])){
-    $category_title = $_POST['category_title'];
-    $update_category = "update `categories` set category_title = '$category_title' where category_id = $category_id";
-
-    $result_update = mysqli_query($con, $update_category);
-    if($result_update){
-        echo "<script>alert('Category updated successfully')</script>";
-        echo "<script>window.open('view_category.php','_self')</script>";
-
-    }else{
-        echo "<script>alert('There was a problem updating the category')</script>";
-    }
-
-}
-?>

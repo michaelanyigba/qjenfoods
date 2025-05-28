@@ -6,9 +6,11 @@ session_start();
 
 if(isset($_SESSION['username'])){
     $username= $_SESSION['username'];
-    $select_query = "Select * from `users` where username = '$username'";
-    $result = mysqli_query($con, $select_query);
-    $result_row = mysqli_fetch_assoc($result);
+    $select_query = $con->prepare("SELECT * FROM `users` WHERE username = ?");
+    $select_query->bind_param("s", $username);
+    $select_query->execute();
+    $select_query_result = $select_query->get_result();
+    $result_row = $select_query_result->fetch_assoc();
     $user_id = $result_row['user_id'];
 }
 
@@ -20,15 +22,13 @@ if(isset($_POST['send_message'])){
     $message = $_POST['message'];
 
     if($subject==''or $message==''){
-        echo "<script>alert('Please fill all the fields')</script>";
-        exit();
+        $_SESSION['show_error'] = true; 
     }
     else{
-        $contact_query = "Insert into `contact` (email, subject, message, contact_date) values ('$email', '$subject', '$message', NOW())";
-        $contact_result = mysqli_query($con, $contact_query);
-        if($contact_result){
-            echo "<script>alert('Message sent successfully')</script>";
-
+        $contact_query = $con->prepare("INSERT INTO `contact` (email, subject, message, contact_date) VALUES (?,?,?, NOW()) ");
+        $contact_query->bind_param("sss", $email, $subject, $message);
+        if($contact_query->execute()){
+            $_SESSION['show_success'] = true;
         }
     }
   
@@ -94,7 +94,7 @@ if(isset($_POST['send_message'])){
                 <div class="d-inline-flex align-items-center d-block d-lg-none">
                     <a href="" class="btn px-0 ml-2">
                     </a>
-                    <a href="" class="btn px-0 ml-2">
+                    <a href="cart.php" class="btn px-0 ml-2">
                         <i class="fas fa-shopping-cart text-dark"></i>
                         <span class="badge text-dark border border-dark rounded-circle" style="padding-bottom: 2px;">0</span>
                     </a>
@@ -184,6 +184,12 @@ if(isset($_POST['send_message'])){
     </div>
     <!-- Navbar End -->
 
+      
+             <!--alert starts  -->
+             <div id="success-alert" class="success-alert">Message sent successfully!</div>
+             <div id="error-alert" class="error-alert">Please fill all fields!</div>
+             <!-- alert ends -->
+
 
     <!-- Breadcrumb Start -->
     <div class="container-fluid">
@@ -267,7 +273,7 @@ if(isset($_POST['send_message'])){
                             <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-5">
+                    <div class="col-md-4 mb-3">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
                             <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
@@ -311,6 +317,37 @@ if(isset($_POST['send_message'])){
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+
+    <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+
+        // Trigger from PHP using session
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+  </script>
 </body>
 
 </html>

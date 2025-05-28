@@ -5,6 +5,7 @@ include("../functions/common_function.php");
 
 @session_start();
 
+
 if(isset($_SESSION['username'])){
     echo "<script>window.open('shop.php', '_self')</script>";
 
@@ -16,8 +17,6 @@ if(isset($_POST['user_login'])){
     $user_password = $_POST['user_password'];
     $user_ip = getIPAddress();
 
-
-
     $select_query = "Select * from `users` where user_email= '$user_email'";
     $result= mysqli_query($con, $select_query);
     $row_count= mysqli_num_rows($result);
@@ -26,8 +25,6 @@ if(isset($_POST['user_login'])){
     $username = $row_data['username'];
     $user_role = $row_data['role'];
     
-    // echo $user_username;
-    // $user_ip = getIPAddress();
 
     // cart item
     $select_query_cart = "Select * from `cart_details` where ip_address= '$user_ip'";
@@ -36,22 +33,18 @@ if(isset($_POST['user_login'])){
 
     if($row_count>0){
         if(password_verify($user_password, $row_data['user_password'])){
-            // echo "<script>alert('Login successful')</script>";
             if($row_count ==1 and $row_count_cart==0){
-                // $_SESSION['username']= $user_username;
-                // $_SESSION['message'];
-                $_SESSION['message'] = "Login successful";
-                $_SESSION['msg_type'] = "success";
                 $_SESSION['username'] = $username;
                 $_SESSION['role'] = $user_role;
+                $_SESSION['cart'] = "no_item_in_cart";
                 header("Location: success.php");
                 exit();
 
             }else{
-                $_SESSION['username']= $user_username;
-                $_SESSION['message'] = "Login successful!";
-                $_SESSION['msg_type'] = "success";
-                header("Location: cart.php");
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = $user_role;
+                $_SESSION['cart'] ="item_in_cart";
+                header("Location: success.php");
                 exit();
             }
 
@@ -184,7 +177,7 @@ if(isset($_POST['user_login'])){
                                     <a href="cart.php" class="dropdown-item">Shopping Cart</a>
                                 </div>
                             </div>
-                            <a href="contact.html" class="nav-item nav-link">Contact</a>
+                            <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                     </div>
                 </nav>
@@ -252,8 +245,8 @@ if(isset($_POST['user_login'])){
     <!-- Checkout End -->
 
 
-   <!-- Footer Start -->
-   <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
+ <!-- Footer Start -->
+ <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
@@ -272,7 +265,7 @@ if(isset($_POST['user_login'])){
                             <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-5">
+                    <div class="col-md-4 mb-3">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
                             <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>

@@ -3,7 +3,7 @@
 include("../includes/connect.php");
 include("../functions/common_function.php");
 
-@session_start();
+session_start();
 
 if(!isset($_SESSION['username'])){
     echo "<script>window.open('user_login.php', '_self')</script>";
@@ -17,7 +17,9 @@ if(isset($_POST['order_mode'])){
     $order_payment_mode= $_POST['payment_mode'];
 
     if($order_receiving_mode=='' or $order_payment_mode==''){
-        echo "<script>alert('Please select all')</script>";
+        $_SESSION['show_error'] = true;
+        header("Location: payment.php");
+        exit();
     }
     else{
 
@@ -26,24 +28,37 @@ if(isset($_POST['order_mode'])){
     // select the user
 $username = $_SESSION['username'];
 // fetching the user id
-$get_user= "Select * from `users` where username= '$username' ";
-$user_query = mysqli_query($con, $get_user);
-$user_row = mysqli_fetch_assoc($user_query);
+// $get_user= "Select * from `users` where username= '$username' ";
+// $user_query = mysqli_query($con, $get_user);
+// $user_row = mysqli_fetch_assoc($user_query);
+$get_user = $con->prepare("SELECT * FROM `users` WHERE username = ?");
+$get_user->bind_param("s", $username);
+$get_user->execute();
+$get_user_result = $get_user->get_result();
+$user_row = $get_user_result->fetch_assoc();
 $user_id = $user_row['user_id'];
 
     // getting total price and total price of all items
 $get_ip_address = getIPAddress();
 $total_price = 0;
-$cart_query_price = "Select * from `cart_details` where ip_address = '$get_ip_address'";
-$result_cart_price = mysqli_query($con, $cart_query_price);
+// $cart_query_price = "Select * from `cart_details` where ip_address = '$get_ip_address'";
+// $result_cart_price = mysqli_query($con, $cart_query_price);
+$cart_query_price = $con->prepare("SELECT * FROM `cart_details` WHERE ip_address = ?");
+$cart_query_price->bind_param("s", $get_ip_address);
+$cart_query_price->execute();
+$result_cart_price = $cart_query_price->get_result();
 $invoice_number = mt_rand();
 // $status = 'pending';
 $count_products = mysqli_num_rows($result_cart_price);
 while($row_price = mysqli_fetch_array($result_cart_price)){
     $product_id = $row_price['product_id'];
     $quantity = $row_price['quantity'];
-    $select_product = "Select * from `products` where product_id= $product_id";
-    $run_price = mysqli_query($con, $select_product);
+    // $select_product = "Select * from `products` where product_id= $product_id";
+    // $run_price = mysqli_query($con, $select_product);
+    $select_product = $con->prepare("SELECT * FROM `products` WHERE product_id = ?");
+    $select_product->bind_param("i", $product_id);
+    $select_product->execute();
+    $run_price = $select_product->get_result();
     while($row_product_price = mysqli_fetch_array($run_price)){
         $product_price = array($row_product_price['product_price']);
         $price_table = $row_product_price['product_price'];
@@ -52,21 +67,16 @@ while($row_price = mysqli_fetch_array($result_cart_price)){
         $total_price += $product_row_price;
 
 
-        // $product_price = array($row_product_price['product_price']);
-        // $price_table= $row_product_price['product_price'];
-        // $product_title= $row_product_price['product_title'];
-        // $product_image1= $row_product_price['product_image1'];
-        // $product_values = array_sum($product_price);
-        // $product_row_price = $price_table * $quantity;
-        // $total_price += $product_row_price;
-
-
     }
 }
 
 // fetching for all the products
-$all_product_query = "Select * from `cart_details` where ip_address = '$get_ip_address'";
-$product_result = mysqli_query($con, $all_product_query);
+// $all_product_query = "Select * from `cart_details` where ip_address = '$get_ip_address'";
+// $product_result = mysqli_query($con, $all_product_query);
+$all_product_query = $con->prepare("SELECT * FROM `cart_details` WHERE ip_address = ?");
+$all_product_query->bind_param("s", $get_ip_address);
+$all_product_query->execute();
+$product_result = $all_product_query->get_result();
 if($product_result -> num_rows>0){
     $all_products = [];
 
@@ -84,17 +94,27 @@ $total_products = mysqli_num_rows($result_cart);
 
 
 // inserting data into the orders database
-$insert_orders = "Insert into `user_orders` (user_id, total_price, invoice_number, total_products, order_date, order_receiving_mode, order_payment_mode, products, status) values ($user_id, $total_price, $invoice_number, $total_products, NOW(), '$order_receiving_mode', '$order_payment_mode','$all_products_json','Pending')";
- $result_query = mysqli_query($con, $insert_orders);
- if($result_query){
-    echo "<script>alert('Orders submitted successfully')</script>";
-    echo "<script>window.open('profile.php', '_self')</script>";
- }
+// $insert_orders = "Insert into `user_orders` (user_id, total_price, invoice_number, total_products, order_date, order_receiving_mode, order_payment_mode, products, status) values ($user_id, $total_price, $invoice_number, $total_products, NOW(), '$order_receiving_mode', '$order_payment_mode','$all_products_json','Pending')";
+//  $result_query = mysqli_query($con, $insert_orders);
+$insert_orders = $con->prepare("INSERT INTO `user_orders` (user_id, total_price, invoice_number, total_products, order_date, order_receiving_mode, order_payment_mode, products, status) VALUES (?,?,?,?,NOW(),?,?,?,'Pending')");
+$insert_orders->bind_param("iiissss",$user_id, $total_price, $invoice_number, $total_products,$order_receiving_mode, $order_payment_mode, $all_products_json);
+$insert_orders->execute();
+
+    //  after order is sent to orders database then we delete orders from cart
+// $empty_cart = "Delete from `cart_details` where ip_address = '$get_ip_address'";
+$empty_cart = $con->prepare("DELETE FROM `cart_details` WHERE ip_address = ?");
+$empty_cart->bind_param("s", $get_ip_address);
+// $result_delete = mysqli_query($con, $empty_cart);
+if($empty_cart->execute()){
+    header("Location: profile.php");
+    $_SESSION['show_success'] = true;
+    exit();
+
+}
+
 
  
-//  after order is sent to orders database then we delete orders from cart
-$empty_cart = "Delete from `cart_details` where ip_address = '$get_ip_address'";
-$result_delete = mysqli_query($con, $empty_cart);
+
 }
 
 
@@ -135,12 +155,12 @@ $result_delete = mysqli_query($con, $empty_cart);
     <div class="container-fluid">
         <div class="row bg-secondary py-1 px-xl-5">
             <div class="col-lg-6 d-none d-lg-block">
-                <div class="d-inline-flex align-items-center h-100">
+                <!-- <div class="d-inline-flex align-items-center h-100">
                     <a class="text-body mr-3" href="">About</a>
                     <a class="text-body mr-3" href="">Contact</a>
                     <a class="text-body mr-3" href="">Help</a>
                     <a class="text-body mr-3" href="">FAQs</a>
-                </div>
+                </div> -->
             </div>
             <div class="col-lg-6 text-center text-lg-right">
                 <div class="d-inline-flex align-items-center">
@@ -191,7 +211,7 @@ $result_delete = mysqli_query($con, $empty_cart);
                                     <a href="cart.php" class="dropdown-item">Shopping Cart</a>
                                 </div>
                             </div>
-                            <a href="contact.html" class="nav-item nav-link">Contact</a>
+                            <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                     </div>
                 </nav>
@@ -200,8 +220,13 @@ $result_delete = mysqli_query($con, $empty_cart);
       </div>
     <!-- Navbar End -->
 
-    <!-- orders starts -->
+    <!-- alert starts -->
+    <div id="success-alert" class="success-alert">Order placed successfully!</div>
+    <div id="error-alert" class="error-alert">Fill select all fields!</div>
+    <!-- alert ends -->
 
+
+    <!-- orders starts -->
   <section class="h-100 gradient-custom">
     <div class="container h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
@@ -216,7 +241,7 @@ $result_delete = mysqli_query($con, $empty_cart);
                 <div class="d-flex justify-content-around payment-card-body">
                         <div class="payment-card-inn"> 
                             <h5>Mode of receiving order</h5>
-                            <select name="receiving_mode" class="form-select select_for_payment" aria-label="Default select example">
+                            <select  name="receiving_mode" class="form-select select_for_payment" aria-label="Default select example">
                                 <option value="">Select receiving mode</option>
                                 <option value="Pickup">Pickup</option>
                                 <option value="Delivery">Delivery</option>
@@ -225,12 +250,16 @@ $result_delete = mysqli_query($con, $empty_cart);
                 <div>
                 <div>
                         <h5>Payment options</h5>
-                        <select name="payment_mode" class="form-select select_for_payment" aria-label="Default select example">
+                        <select onchange='toggleInputField()' id='payment_mode' name="payment_mode" class="form-select select_for_payment" aria-label="Default select example">
                         <option value="">Select payment mode</option>
                         <option value="Mobile money">Mobile money</option>
                         <option value="Credit card">Credit card</option>
                         <option value="Cash">Cash</option>
                         </select>
+                </div>
+                <div id="mobile_money_number_div" class="mt-2 mobile_money_number_div" style='display: none;' >
+                    <p>Mobile money number</p>
+                    <h6>+233 593 808 316</h6>
                 </div>
             </div>
             </div>
@@ -244,15 +273,13 @@ $result_delete = mysqli_query($con, $empty_cart);
   </section>
 <!-- orders end -->
 
-
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
+ <!-- Footer Start -->
+ <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
-                <p class="mb-4">No dolore ipsum accusam no lorem. Invidunt sed clita kasd clita et et dolor sed dolor. Rebum tempor no vero est magna amet no</p>
-                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
+                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, Accra, Ghana</p>
+                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>qjen@example.com</p>
                 <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
             </div>
             <div class="col-lg-8 col-md-12">
@@ -260,36 +287,20 @@ $result_delete = mysqli_query($con, $empty_cart);
                     <div class="col-md-4 mb-5">
                         <h5 class="text-secondary text-uppercase mb-4">Quick Shop</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="./../index.php"><i class="fa fa-angle-right mr-2"></i>Home</a>
+                            <a class="text-secondary mb-2" href="shop.php"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
+                            <a class="text-secondary mb-2" href="cart.php"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
+                            <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-5">
+                    <div class="col-md-4 mb-3">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Orders</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-5">
-                        <h5 class="text-secondary text-uppercase mb-4">Newsletter</h5>
-                        <p>Duo stet tempor ipsum sit amet magna ipsum tempor est</p>
-                        <form action="">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Your Email Address">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary">Sign Up</button>
-                                </div>
-                            </div>
-                        </form>
                         <h6 class="text-secondary text-uppercase mt-4 mb-3">Follow Us</h6>
                         <div class="d-flex">
                             <a class="btn btn-primary btn-square mr-2" href="#"><i class="fab fa-twitter"></i></a>
@@ -302,18 +313,11 @@ $result_delete = mysqli_query($con, $empty_cart);
             </div>
         </div>
         <div class="row border-top mx-xl-5 py-4" style="border-color: rgba(256, 256, 256, .1) !important;">
-            <div class="col-md-6 px-xl-0">
-                <p class="mb-md-0 text-center text-md-left text-secondary">
-                    &copy; <a class="text-primary" href="#">Domain</a>. All Rights Reserved. Designed
-                    by
-                    <a class="text-primary" href="https://htmlcodex.com">HTML Codex</a>
-                </p>
-            </div>
             <div class="col-md-6 px-xl-0 text-center text-md-right">
-                <img class="img-fluid" src="img/payments.png" alt="">
+                <!-- <img class="img-fluid" src="img/payments.png" alt=""> -->
             </div>
         </div>
-    </div>
+ </div>
     <!-- Footer End -->
 
 
@@ -333,6 +337,48 @@ $result_delete = mysqli_query($con, $empty_cart);
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+
+    <script>
+        function toggleInputField() {
+            const select = document.getElementById("payment_mode");
+            const mobile_money_number = document.getElementById("mobile_money_number_div");
+            
+            if (select.value === "Mobile money") {
+                mobile_money_number.style.display = "block";
+            } else {
+                mobile_money_number.style.display = "none";
+            }
+        }
+    </script>
+
+    <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+  </script>
 </body>
 
 </html>

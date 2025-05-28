@@ -18,7 +18,7 @@ session_start();
 <?php
             if(!isset($_SESSION['username'])){
                 echo "<script>window.open('user_login.php','_self')</script>";
-            }else{
+            }elseif(isset($_SESSION['username'])){
                 echo "<script>window.open('payment.php','_self')</script>";
             }
             

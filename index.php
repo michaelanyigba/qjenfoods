@@ -1,7 +1,7 @@
 <?php
 include("includes/connect.php");
 include("functions/common_function.php");
-
+ob_start(); 
 session_start();
 
 ?>
@@ -24,7 +24,8 @@ session_start();
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
 
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
     <!-- Libraries Stylesheet -->
     <link href="./user_area/lib/animate/animate.min.css" rel="stylesheet">
@@ -52,15 +53,19 @@ session_start();
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown">My Account</button>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <!-- <button class="dropdown-item" type="button">Sign in</button>
-                            <button class="dropdown-item" type="button">Sign up</button> -->
                             <?php
-                            if(!isset($_SESSION['username'])){
+                            if(!isset( $_SESSION['username']) || $_SESSION['role'] !=="user"){
                                 echo "<a href='./user_area/user_login.php'> <button class='dropdown-item' type='button'>Login</button></a>";
                                 echo "<a href='./user_area/user_register.php'><button class='dropdown-item' type='button'>Register</button></a> ";
-                            }else{
+                            }else if($_SESSION['username'] && $_SESSION['role'] ==="user"){
+                                
                                 echo "<a href='./user_area/profile.php'> <button class='dropdown-item'>My profile</button></a>";
 
+                            }else{
+                                session_unset();
+                                session_destroy();
+                                header("Location: ./user_area/user_login.php");
+                              
                             }
 
                             ?>
@@ -180,6 +185,11 @@ session_start();
                 </form>
             </div>
             <!-- search bar ends -->
+             
+             <!--alert starts  -->
+             <div id="success-alert" class="success-alert">Product added to cart!</div>
+             <div id="error-alert" class="error-alert">Product already in cart!</div>
+             <!-- alert ends -->
     
 
 
@@ -191,36 +201,23 @@ session_start();
                     <ol class="carousel-indicators">
                         <li data-target="#header-carousel" data-slide-to="0" class="active"></li>
                         <li data-target="#header-carousel" data-slide-to="1"></li>
-                        <li data-target="#header-carousel" data-slide-to="2"></li>
                     </ol>
                     <div class="carousel-inner">
                         <div class="carousel-item position-relative active" style="height: 430px;">
-                            <img class="position-absolute w-100 h-100" src="./user_area/img/banner1.jpeg" style="object-fit: cover;">
+                            <img class="position-absolute w-100 h-100" src="./user_area/img/banner-1.png" style="object-fit: cover;">
                             <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
                                 <div class="p-3" style="max-width: 700px;">
-                                    <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">Variety of Products</h1>
-                                    <p class="mx-md-5 px-5 animate__animated animate__bounceIn">Lorem rebum magna amet lorem magna erat diam stet. Sadips duo stet amet amet ndiam elitr ipsum diam</p>
-                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="#">Shop Now</a>
+                                    <!-- <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">American Products</h1> -->
+                                    <!-- <p class="mx-md-5 px-5 animate__animated animate__bounceIn">Discover premium American products delivered to your door.</p> -->
+                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="./user_area/shop.php">Shop Now</a>
                                 </div>
                             </div>
                         </div>
                         <div class="carousel-item position-relative" style="height: 430px;">
-                            <img class="position-absolute w-100 h-100" src="./user_area/img/banner2.jpg" style="object-fit: cover;">
+                            <img class="position-absolute w-100 h-100" src="./user_area/img/banner-2.png" style="object-fit: cover;">
                             <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
                                 <div class="p-3" style="max-width: 700px;">
-                                    <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">Bagged Products</h1>
-                                    <p class="mx-md-5 px-5 animate__animated animate__bounceIn">Lorem rebum magna amet lorem magna erat diam stet. Sadips duo stet amet amet ndiam elitr ipsum diam</p>
-                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="#">Shop Now</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="carousel-item position-relative" style="height: 430px;">
-                            <img class="position-absolute w-100 h-100" src="./user_area/img/banner3.jpg" style="object-fit: cover;">
-                            <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
-                                <div class="p-3" style="max-width: 700px;">
-                                    <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">Different Vibes</h1>
-                                    <p class="mx-md-5 px-5 animate__animated animate__bounceIn">Lorem rebum magna amet lorem magna erat diam stet. Sadips duo stet amet amet ndiam elitr ipsum diam</p>
-                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="#">Shop Now</a>
+                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="./user_area/shop.php">Shop Now</a>
                                 </div>
                             </div>
                         </div>
@@ -279,11 +276,11 @@ session_start();
 
 
     <!-- Offer Start -->
-    <div class="container-fluid pt-5 pb-3">
+    <!-- <div class="container-fluid pt-5 pb-3">
         <div class="row px-xl-5">
             <div class="col-md-6">
                 <div class="product-offer mb-30" style="height: 300px;">
-                    <img class="img-fluid" src="./user_area/img/offer-1.jpg" alt="">
+                    <img class="img-fluid" src="./user_area/img/flyer1.png" alt="">
                     <div class="offer-text">
                         <h6 class="text-white text-uppercase">Save 20%</h6>
                         <h3 class="text-white mb-3">Special Offer</h3>
@@ -293,7 +290,7 @@ session_start();
             </div>
             <div class="col-md-6">
                 <div class="product-offer mb-30" style="height: 300px;">
-                    <img class="img-fluid" src="./user_area/img/offer-2.jpg" alt="">
+                    <img class="img-fluid" src="./user_area/img/flyer2.png" alt="">
                     <div class="offer-text">
                         <h6 class="text-white text-uppercase">Save 20%</h6>
                         <h3 class="text-white mb-3">Special Offer</h3>
@@ -302,7 +299,7 @@ session_start();
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
     <!-- Offer End -->
 
 
@@ -310,33 +307,7 @@ session_start();
     <div class="container-fluid pt-5 pb-3">
         <h2 class="section-title position-relative text-uppercase mx-xl-5 mb-4"><span class="bg-secondary pr-3">Recent Products</span></h2>
         <div class="row px-xl-5">
-            <!-- <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
-                <div class="product-item bg-light mb-4">
-                    <div class="product-img position-relative overflow-hidden">
-                        <img class="img-fluid w-100" src="./user_area/img/product-1.jpg" alt="">
-                        <div class="product-action">
-                            <a class="btn btn-outline-dark btn-square" href=""><i class="fa fa-shopping-cart"></i></a>
-                            <a class="btn btn-outline-dark btn-square" href=""><i class="far fa-heart"></i></a>
-                            <a class="btn btn-outline-dark btn-square" href=""><i class="fa fa-sync-alt"></i></a>
-                            <a class="btn btn-outline-dark btn-square" href=""><i class="fa fa-search"></i></a>
-                        </div>
-                    </div>
-                    <div class="text-center py-4">
-                        <a class="h6 text-decoration-none text-truncate" href="">Product Name Goes Here</a>
-                        <div class="d-flex align-items-center justify-content-center mt-2">
-                            <h5>$123.00</h5><h6 class="text-muted ml-2"><del>$123.00</del></h6>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-center mb-1">
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small>(99)</small>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
+
             <?php
              get_products();
              ?>
@@ -450,6 +421,39 @@ session_start();
             document.getElementById('searchForm').submit();
         }
     </script>
+
+  <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+
+        // Trigger from PHP using session
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+  </script>
+
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

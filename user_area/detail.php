@@ -2,9 +2,10 @@
 include("../includes/connect.php");
 include("../functions/common_function.php");
 
+ob_start(); 
+
+
 session_start();
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -24,7 +25,9 @@ session_start();
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
 
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
 
     <!-- Libraries Stylesheet -->
     <link href="lib/animate/animate.min.css" rel="stylesheet">
@@ -139,7 +142,6 @@ session_start();
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages <i class="fa fa-angle-down mt-1"></i></a>
                                 <div class="dropdown-menu bg-primary rounded-0 border-0 m-0">
                                     <a href="cart.php" class="dropdown-item">Shopping Cart</a>
-                                    <a href="checkout.php" class="dropdown-item">Checkout</a>
                                 </div>
                             </div>
                             <a href="contact.php" class="nav-item nav-link">Contact</a>
@@ -224,7 +226,7 @@ session_start();
                             <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-5">
+                    <div class="col-md-4 mb-3">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
                             <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
@@ -271,3 +273,4 @@ session_start();
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

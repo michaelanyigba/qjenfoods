@@ -1,25 +1,66 @@
 <?php
 include("../includes/connect.php");
+session_start();
 
+  
+if(!isset($_SESSION['username']) || $_SESSION['role'] !=="admin" && $_SESSION['role'] !=="sub_admin"){
+  session_unset();
+  session_destroy();
+  header("Location: ../user_area/user_login.php");
+}
+
+$_SESSION['username'];
+$username = $_SESSION['username'];
 if(isset($_GET['order_id'])){
   $order_id = $_GET['order_id'];
 }
 
-if(isset($_POST['update_status'])){
-  $order_status = $_POST['order_status'];
-  $update_order_status = "update `user_orders` set status = '$order_status' where order_id = $order_id";
-  $update_result = mysqli_query($con, $update_order_status);
-  if($update_result){
-    echo "<script>alert('Order updated successfully')</script>";
-  }else{
-    echo "<script>alert('An error occured')</script>";
-
-  }
-
+// fetching user
+if(isset($_GET['order_id'])){
+  // $user_query_fetch = "Select * from `users` where username = '$username'";
+  $user_query_fetch = $con->prepare("SELECT * FROM `users` WHERE username = ?");
+  $user_query_fetch->bind_param("s", $username);
+  $user_query_fetch->execute();
+  $user_result_fetch = $user_query_fetch->get_result();
+  $user_row_fetch = $user_result_fetch->fetch_assoc();
+  $user_fetch_id = $user_row_fetch['user_id'];
 }
 
 
 
+if(isset($_POST['update_status'])){
+
+  $order_status = $_POST['order_status'];
+  $cancel_reason =$_POST['cancel_reason'];
+  if($order_status === 'Cancelled' && $cancel_reason !==''){
+    $update_order_status_reason = $con->prepare("UPDATE `user_orders` SET status = ?, cancel_reason_admin=?, cancel_user_id =? WHERE order_id = ? ");
+    $update_order_status_reason->bind_param("ssii", $order_status, $cancel_reason, $user_fetch_id, $order_id);
+    if($update_order_status_reason->execute()){
+      $_SESSION['show_success'] = true;
+    
+    }else{
+      $_SESSION['show_error'] = true;
+  
+    }
+  }elseif($order_status === 'Cancelled' && $cancel_reason ===''){
+    $_SESSION['show_cancel_error'] = true;
+  }
+   else{
+    // $update_order_status = "update `user_orders` set status = '$order_status'  where order_id = $order_id";
+    // $update_result = mysqli_query($con, $update_order_status);
+    $update_order_status = $con->prepare("UPDATE `user_orders` SET status = ? WHERE order_id = ?");
+    $update_order_status->bind_param("si", $order_status, $order_id);
+    if($update_order_status->execute()){
+      $_SESSION['show_success'] = true;
+    }else{
+      $_SESSION['show_error'] = true;
+  
+    }
+ 
+  }
+
+
+}
 ?>
 
 <!DOCTYPE html>
@@ -37,6 +78,9 @@ if(isset($_POST['update_status'])){
     <!-- CUSTOM STYLES-->
     <link href="assets/css/custom.css" rel="stylesheet" />
     <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
     
 
     <!-- GOOGLE FONTS-->
@@ -101,7 +145,7 @@ if(isset($_POST['update_status'])){
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">Qjen Admin</a>
+          <a class="navbar-brand" href="index.html"><?php echo $username?> Admin</a>
         </div>
         <div
           style="
@@ -171,15 +215,35 @@ if(isset($_POST['update_status'])){
               >
             </li>
             <li>
-              <a class="active-menu" href="cancelled_order.php"
+              <a class="" href="cancelled_order.php"
                 ><i class="fa fa-ticket fa-3x" aria-hidden="true"></i> Cancelled Orders</a
               >
             </li>
-            <li>
-              <a href="view_user.php"
-                ><i class="fa fa-rocket fa-3x"></i> View Users</a
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "<li><a href='view_user.php'><i class='fa fa-rocket fa-3x'></i> View Users</a
               >
-            </li>
+            </li>";
+            }
+            ?>  
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "   <li>
+              <a href='add_member.php'
+                ><i class='fa-solid fa-people-arrows fa-3x'></i> Add Members</a
+              >
+            </li'";
+            }
+            ?>
+            <?php
+            if($_SESSION['role']=== "admin"){
+              echo "     <li>
+              <a href='view_member.php'
+                ><i class='fa-solid fa-people-line fa-3x'></i> View Members</a
+              >
+            </li>";
+            }
+            ?>
           </ul>
         </div>
       </nav>
@@ -187,69 +251,101 @@ if(isset($_POST['update_status'])){
       <div id="page-wrapper">
         <div id="page-inner">
           <div class="row">
-            <div class="col-md-12">
-              <h2>Admin Dashboard</h2>
-              <h5>Welcome Jhon Deo , Love to see you back.</h5>
-            </div>
-          </div>
-          <!-- /. ROW  -->
-          <hr />
+
+           <!--alert starts  -->
+           <div id="success-alert" class="success-alert">Order status updated successfully!</div>
+             <div id="error-alert" class="error-alert">Failed to update order status!</div>
+             <div id="error-cancel-alert" class="error-cancel-alert">Give reason to cancel order!</div>
+             <!-- alert ends -->
         
           <!-- order starts -->
           <div class="container order-container">
     <h2 class="text-center mb-4">Order Details</h2>
-    <?php
-    if(isset($_GET['order_id'])){
-      $order_id = $_GET['order_id'];
-      $select_order_query = "Select * from `user_orders` where order_id = '$order_id'";
-      $order_result = mysqli_query($con, $select_order_query);
-      $order_row = mysqli_fetch_assoc($order_result);
-      $order_total_price = $order_row['total_price'];
-      $order_date = $order_row['order_date'];
-      $payment_mode = $order_row['order_payment_mode'];
-      $receiving_mode = $order_row['order_receiving_mode'];
-      // fetching the user information
-      $user_id = $order_row['user_id'];
-      $user_query = "Select * from `users` where user_id = '$user_id'";
-      $user_result = mysqli_query($con, $user_query);
-      $user_row = mysqli_fetch_assoc($user_result);
-      $username = $user_row['username'];
-      $user_email = $user_row['user_email'];
-      $user_address = $user_row['user_address'];
-      $user_phone_number = $user_row['user_phone_number'];
-     
-    }
+      <?php
+      if(isset($_GET['order_id'])){
+        $order_id = $_GET['order_id'];
+        $select_order_query = $con->prepare("SELECT * FROM `user_orders` WHERE order_id = ?");
+        $select_order_query->bind_param("i", $order_id);
+        $select_order_query->execute();
+        $select_order_result = $select_order_query->get_result();
+        $order_row = $select_order_result->fetch_assoc();
+        $order_total_price = $order_row['total_price'];
+        $order_date = $order_row['order_date'];
+        $payment_mode = $order_row['order_payment_mode'];
+        $receiving_mode = $order_row['order_receiving_mode'];
+        $cancel_reason_admin = $order_row['cancel_reason_admin'];
+        $cancel_reason_user = $order_row['cancel_reason_user'];
+        // fetching the user information
+        $user_id = $order_row['user_id'];
+        $user_query = $con->prepare("SELECT * FROM `users` WHERE user_id = ?");
+        $user_query->bind_param("i", $user_id);
+        $user_query->execute();
+        $user_query_result = $user_query->get_result();
+        $user_row = $user_query_result->fetch_assoc();
+        $username = $user_row['username'];
+        $user_email = $user_row['user_email'];
+        $user_address = $user_row['user_address'];
+        $user_phone_number = $user_row['user_phone_number'];
+        
+      
+      }
 
-    ?>
+      ?>
 
     <!-- Order Summary -->
     <div class="mb-4">
+    <?php
+
+        $order_status_sql = $con->prepare("SELECT status, cancel_user_id FROM `user_orders` WHERE order_id = ?");
+        $order_status_sql->bind_param("i", $order_id);
+        $order_status_sql->execute();
+        $order_status_result = $order_status_sql->get_result();
+        $order_result_row = $order_status_result->fetch_assoc();
+        $order_status = $order_result_row['status'];
+        $cancel_user_id = $order_result_row['cancel_user_id'];
+
+        if($order_status === "Cancelled"){
+          $cancel_user_sql = $con->prepare("SELECT * FROM `users` WHERE user_id = ?");
+          $cancel_user_sql->bind_param("i", $cancel_user_id);
+          $cancel_user_sql->execute();
+          $cancel_user_result = $cancel_user_sql->get_result();
+          $cancel_user_row = $cancel_user_result->fetch_assoc();
+          $cancel_username = $cancel_user_row['username'];
+        }
+
+        ?>
         <h5 class="section-title"><i class="fa fa-shopping-cart" aria-hidden="true"></i> Order Summary</h5>
         <p><strong>Order ID:</strong> # <?php echo $order_id?></p>
         <p><strong>Order Date:</strong> <?php echo $order_date?></p>
-        <p><strong>Total Price: </strong>$<?php echo $order_total_price?></p>
+        <p><strong>Total Price: </strong><i class='fas fa-cedi-sign'></i><?php echo $order_total_price?></p>
         <p><strong>Payment Method:</strong> <span class="badge bg-success"><?php echo $payment_mode?></span></p>
         <p><strong>Order Receiving Mode:</strong> <span class="badge bg-success"><?php echo $receiving_mode?></span></p>
-        <form action="" method="post">
+        <p><strong>Order Status:</strong> <?php echo $order_status?></p>
+        <p id="cancel_reason_user"><strong class="mb-2">Cancel Reason ( <?php echo $username?> ): <?php echo $cancel_reason_user?> </strong></p>
+        <p id="cancel_reason_admin"><strong class="mb-2">Cancel Reason ( <?php if(!empty($cancel_username)){echo $cancel_username;} else {echo "None";}?> ): <?php echo $cancel_reason_admin?> </strong></p>
+
+        <form method="post">
         <div class="order_status">
-        <p><strong>Order Status:</strong>
-        <?php
-        $order_status = "Select status from `user_orders` where order_id = '$order_id'";
-        $order_status_result = mysqli_query($con, $order_status);
-        $order_result_row = mysqli_fetch_assoc($order_status_result);
-        $order_status = $order_result_row['status'];
-        echo " <select class='form-select form-select-sm d-inline-block w-auto' name='order_status'>
+        <?php   
+        echo " <select class='status-select' name='order_status' onchange='toggleInputField()' id='status'>
                 <option value='$order_status'>$order_status</option>
                 <option value='Processing'>Processing</option>
                 <option value='Delivered'>Delivered</option>
                 <option value='Cancelled'>Cancelled</option>
-            </select>";
+            </select>
+            
+    ";
         ?>  
-        </p><button name="update_status" class="status_btn"><i class="fa fa-check" aria-hidden="true"></i></button>
+        <button name="update_status" class="status_btn" id="update_status"><i class="fa fa-check" aria-hidden="true"></i></button>
         </div>
-        </form>
+
+    <div id='cancelReasonDiv' style='display: none; margin-top: 10px;'>
+        <label for='cancel_reason'>Reason for Cancellation:</label>
+        <input type='text' name='cancel_reason' id='cancel_reason'>
     </div>
-  
+        </form>
+
+    </div>
 
     <!-- User Details -->
     <div class="mb-4">
@@ -277,11 +373,13 @@ if(isset($_POST['update_status'])){
               // fetching product information
          $products = json_decode($order_row['products'], true);
          foreach($products as $product){
-           $product_ids = $product['product_id'];
-           $product_quantity = $product['quantity'];
-           $product_query = "Select * from `products` where product_id = $product_ids";
-           $product_result = mysqli_query($con, $product_query);
-           while($product_row = mysqli_fetch_assoc($product_result)){
+          $product_ids = $product['product_id'];
+          $product_quantity = $product['quantity'];
+          $product_query = $con->prepare("SELECT * FROM `products` WHERE product_id = ?");
+          $product_query->bind_param("i", $product_ids);
+          $product_query->execute();
+          $product_query_result = $product_query->get_result();
+           while($product_row =  $product_query_result->fetch_assoc()){
              $product_title = $product_row['product_title'];
              $product_price = $product_row['product_price'];
              $product_total = $product_quantity * $product_price;
@@ -289,8 +387,8 @@ if(isset($_POST['update_status'])){
                 <tr>
                     <td>$product_title</td>
                     <td>$product_quantity</td>
-                    <td>$ $product_price</td>
-                    <td>$ $product_total</td>
+                    <td><i class='fas fa-cedi-sign'></i>$product_price</td>
+                    <td><i class='fas fa-cedi-sign'></i>$product_total</td>
                 </tr>
             </tbody>";
 
@@ -298,8 +396,6 @@ if(isset($_POST['update_status'])){
        
          }
         ?>
-          
-          
         </table>
     </div>
 </div>
@@ -331,5 +427,81 @@ if(isset($_POST['update_status'])){
     </script>
     <!-- CUSTOM SCRIPTS -->
     <script src="assets/js/custom.js"></script>
+
+    <script>
+        function toggleInputField() {
+            const select = document.getElementById("status");
+            const inputDiv = document.getElementById("cancelReasonDiv");
+            
+            if (select.value === "Cancelled") {
+                inputDiv.style.display = "block";
+            } else {
+                inputDiv.style.display = "none";
+            }
+        }
+    </script>
+
+    <script>
+          const select_div = document.getElementById("status");
+          const update_status = document.getElementById("update_status");
+          const cancel_reason_admin = document.getElementById("cancel_reason_admin");
+          if (select_div.value === "Cancelled") {
+            select_div.style.display = "none";
+            update_status.style.display = "none";
+            } else {
+              select_div.style.display = "block";
+              update_status.style.display = "block";
+            }
+
+            if(select_div.value === "Delivered"){
+              cancel_reason_admin.style.display = "none";
+              cancel_reason_user.style.display = "none";
+              update_status.style.display = "none";
+              select_div.style.display = "none";
+            }
+    </script>
+      <script>
+        function showSuccessAlert() {
+        const alertBox = document.getElementById('success-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorAlert() {
+        const alertBox = document.getElementById('error-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+        function showErrorCancelAlert() {
+        const alertBox = document.getElementById('error-cancel-alert');
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 2500);
+        }
+
+        // Trigger from PHP using session
+        <?php
+        if (isset($_SESSION['show_success']) && $_SESSION['show_success']) {
+            echo "showSuccessAlert();";
+            unset($_SESSION['show_success']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_error']) && $_SESSION['show_error']) {
+            echo "showErrorAlert();";
+            unset($_SESSION['show_error']); // remove flag
+        }
+        ?>
+        <?php
+        if (isset($_SESSION['show_cancel_error']) && $_SESSION['show_cancel_error']) {
+            echo "showErrorCancelAlert();";
+            unset($_SESSION['show_cancel_error']); // remove flag
+        }
+        ?>
+  </script>
   </body>
 </html>

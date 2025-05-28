@@ -13,34 +13,17 @@ if(!isset($_SESSION['username'])){
 
 
 $user_session_name = $_SESSION['username'];
-$select_query = "Select * from `users` where username = '$user_session_name'";
-$result_query = mysqli_query($con, $select_query);
-$row_fetch = mysqli_fetch_assoc($result_query);
+$select_query = $con->prepare("SELECT * FROM `users` WHERE username = ?");
+$select_query->bind_param("s", $user_session_name);
+$select_query->execute();
+$select_query_result = $select_query->get_result();
+$row_fetch = $select_query_result->fetch_assoc();
 $user_id = $row_fetch['user_id'];
 $username = $row_fetch['username'];
 $user_email = $row_fetch['user_email'];
 $user_address = $row_fetch['user_address'];
 $user_phone_number = $row_fetch['user_phone_number'];
 
-// when the update button is clicked
-
-if(isset($_POST['update_user'])){
-    $update_id = $user_id;
-    $username = $_POST['user_username'];
-    $user_email = $_POST['user_email'];
-    $user_address = $_POST['user_address'];
-    $user_phone_number = $_POST['user_phone_number'];
-
-
-    // update query
-    $update_data = "Update `users` set username = '$username' , user_email= '$user_email', user_address='$user_address', user_phone_number= '$user_phone_number' where user_id = $update_id ";
-    $result_query_update = mysqli_query($con, $update_data);
-    if($result_query_update){
-        echo "<script>alert('Account updated successfully')</script>";
-        echo "<script>window.open('logout.php', '_self')</script>";
-    }
-
-}
 
 ?>
 
@@ -71,6 +54,45 @@ if(isset($_POST['update_user'])){
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/responsive.css" rel="stylesheet">
+
+    <style>
+    #confirmBox {
+      display: none;
+      position: fixed;
+      top: 25%;
+      width: 70%;
+      left: 20%;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      text-align: center;
+      z-index: 10;
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 5;
+    }
+
+    #confirmBox button{
+        border:none;
+        padding: 10px;
+        border-radius: 3px;
+    }
+
+    @media (min-width: 768px) {
+        #confirmBox{
+            width: 50%;
+            height: 30%;
+            align-items: center;
+       
+        }
+    }
+  </style>
 </head>
 
 <body>
@@ -87,13 +109,6 @@ if(isset($_POST['update_user'])){
             </div>
             <div class="col-lg-6 text-center text-lg-right">
                 <div class="d-inline-flex align-items-center">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown">My Account</button>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <button class="dropdown-item" type="button">Sign in</button>
-                            <button class="dropdown-item" type="button">Sign up</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -141,7 +156,7 @@ if(isset($_POST['update_user'])){
                                     <a href="cart.php" class="dropdown-item">Shopping Cart</a>
                                 </div>
                             </div>
-                            <a href="contact.html" class="nav-item nav-link">Contact</a>
+                            <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                     </div>
                 </nav>
@@ -149,6 +164,8 @@ if(isset($_POST['update_user'])){
         </div>
     </div>
     <!-- Navbar End -->
+
+
 
     <!-- profile starts -->
     <div class="container">
@@ -179,9 +196,21 @@ if(isset($_POST['update_user'])){
 	</div>
 </div>
 </div>
+
+<!-- overlay -->
+<div id="overlay"></div>
+
+    <!-- Confirmation Container -->
+<div id="confirmBox">
+  <p>Are you sure you want to update your account?</p>
+  <button type="button" onclick="submitForm()">Yes</button>
+  <button onclick="hideConfirm()">No</button>
+</div>
+<!-- confirmation container ends -->
 <div class="col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12">
 <div class="card h-100">
-    <form action="" method="post">
+    <!-- Overlay for modal effect -->
+    <form  id="updateForm" action="update_account.php" method="post">
 	<div class="card-body">
 		<div class="row gutters">
 			<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
@@ -215,27 +244,28 @@ if(isset($_POST['update_user'])){
 		<div class="row gutters">
 			<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
 				<div class="text-right">
-					<a href="profile.php"><button type="button" id="submit" name="submit" class="btn btn-secondary">Cancel</button></a>
-					<button type="submit" onclick="return confirm('Are you sure you want to update account?')" name="update_user" class="btn btn-primary">Update</button>
+					<a href="profile.php"><button type="button" class="btn btn-secondary">Cancel</button></a>
+					<button type="button" onclick="showConfirm()" class="btn btn-primary">Update</button>
 				</div>
 			</div>
 		</div>
 	</div>
     </form>
+
+
 </div>
 </div>
 </div>
 </div>
 
 
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
+   <!-- Footer Start -->
+   <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <h5 class="text-secondary text-uppercase mb-4">Get In Touch</h5>
-                <p class="mb-4">No dolore ipsum accusam no lorem. Invidunt sed clita kasd clita et et dolor sed dolor. Rebum tempor no vero est magna amet no</p>
-                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, New York, USA</p>
-                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>info@example.com</p>
+                <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>123 Street, Accra, Ghana</p>
+                <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>qjen@example.com</p>
                 <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>+012 345 67890</p>
             </div>
             <div class="col-lg-8 col-md-12">
@@ -243,36 +273,20 @@ if(isset($_POST['update_user'])){
                     <div class="col-md-4 mb-5">
                         <h5 class="text-secondary text-uppercase mb-4">Quick Shop</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="./../index.php"><i class="fa fa-angle-right mr-2"></i>Home</a>
+                            <a class="text-secondary mb-2" href="shop.php"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
+                            <a class="text-secondary mb-2" href="cart.php"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
+                            <a class="text-secondary" href="contact.php"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-5">
+                    <div class="col-md-4 mb-3">
                         <h5 class="text-secondary text-uppercase mb-4">My Account</h5>
                         <div class="d-flex flex-column justify-content-start">
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Home</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Our Shop</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shop Detail</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Shopping Cart</a>
-                            <a class="text-secondary mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Checkout</a>
-                            <a class="text-secondary" href="#"><i class="fa fa-angle-right mr-2"></i>Contact Us</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Profile</a>
+                            <a class="text-secondary mb-2" href="profile.php"><i class="fa fa-angle-right mr-2"></i>My Orders</a>
                         </div>
                     </div>
                     <div class="col-md-4 mb-5">
-                        <h5 class="text-secondary text-uppercase mb-4">Newsletter</h5>
-                        <p>Duo stet tempor ipsum sit amet magna ipsum tempor est</p>
-                        <form action="">
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Your Email Address">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary">Sign Up</button>
-                                </div>
-                            </div>
-                        </form>
                         <h6 class="text-secondary text-uppercase mt-4 mb-3">Follow Us</h6>
                         <div class="d-flex">
                             <a class="btn btn-primary btn-square mr-2" href="#"><i class="fab fa-twitter"></i></a>
@@ -285,15 +299,8 @@ if(isset($_POST['update_user'])){
             </div>
         </div>
         <div class="row border-top mx-xl-5 py-4" style="border-color: rgba(256, 256, 256, .1) !important;">
-            <div class="col-md-6 px-xl-0">
-                <p class="mb-md-0 text-center text-md-left text-secondary">
-                    &copy; <a class="text-primary" href="#">Domain</a>. All Rights Reserved. Designed
-                    by
-                    <a class="text-primary" href="https://htmlcodex.com">HTML Codex</a>
-                </p>
-            </div>
             <div class="col-md-6 px-xl-0 text-center text-md-right">
-                <img class="img-fluid" src="img/payments.png" alt="">
+                <!-- <img class="img-fluid" src="img/payments.png" alt=""> -->
             </div>
         </div>
     </div>
@@ -316,6 +323,22 @@ if(isset($_POST['update_user'])){
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+
+    <script>
+  function showConfirm() {
+    document.getElementById('confirmBox').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+  }
+
+  function hideConfirm() {
+    document.getElementById('confirmBox').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+  }
+
+  function submitForm() {
+    document.getElementById('updateForm').submit();
+  }
+</script>
 </body>
 
 </html>
