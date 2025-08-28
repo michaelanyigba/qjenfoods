@@ -11,7 +11,7 @@ session_start();
 
 <head>
     <meta charset="utf-8">
-    <title>QJEN FOODS</title>
+    <title>Q-JEN FOODS</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free HTML Templates" name="keywords">
     <meta content="Free HTML Templates" name="description">
@@ -75,7 +75,7 @@ session_start();
         <div class="row align-items-center bg-light py-3 px-xl-5 d-none d-lg-flex">
             <div class="col-lg-4">
                 <a href="" class="text-decoration-none">
-                    <span class="h1 text-uppercase text-primary bg-dark px-2">QJEN</span>
+                    <span class="h1 text-uppercase text-primary bg-dark px-2">Q-JEN</span>
                     <span class="h1 text-uppercase text-dark bg-primary px-2 ml-n1">FOODS</span>
                 </a>
             </div>
@@ -121,7 +121,7 @@ session_start();
             <div class="col-lg-9">
                 <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-3 py-lg-0 px-0">
                     <a href="" class="text-decoration-none d-block d-lg-none">
-                        <span class="h1 text-uppercase text-dark bg-light px-2">QJEN</span>
+                        <span class="h1 text-uppercase text-dark bg-light px-2">Q-JEN</span>
                         <span class="h1 text-uppercase text-light bg-primary px-2 ml-n1">FOODS</span>
                     </a>
                     <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
@@ -131,12 +131,12 @@ session_start();
                         <div class="navbar-nav mr-auto py-0">
                             <a href="../index.php" class="nav-item nav-link">Home</a>
                             <a href="shop.php" class="nav-item nav-link">Shop</a>
-                            <div class="nav-item dropdown">
+                            <!-- <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages <i class="fa fa-angle-down mt-1"></i></a>
                                 <div class="dropdown-menu bg-primary rounded-0 border-0 m-0">
                                     <a href="cart.php" class="dropdown-item">Shopping Cart</a>
                                 </div>
-                            </div>
+                            </div> -->
                             <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                         <div class="navbar-nav ml-auto py-0 d-none d-lg-block">
@@ -165,7 +165,6 @@ add_to_cart_for_user_area();
                 <nav class="breadcrumb bg-light mb-30">
                     <a class="breadcrumb-item text-dark" href="./../index.php">Home</a>
                     <a class="breadcrumb-item text-dark" href="shop.php">Shop</a>
-                    <span class="breadcrumb-item active">Shop List</span>
                 </nav>
             </div>
         </div>

@@ -59,7 +59,7 @@ if(isset($_POST['register_user'])){
     }else{
    // insert query
   $insert_query = $con->prepare("INSERT INTO `users` (username, user_email, user_password, role) VALUES (?,?,?,?)");
-  $insert_query->bind_param("ssss", $user_username, $user_email, $user_password, $sub_admin);
+  $insert_query->bind_param("ssss", $user_username, $user_email, $hash_password, $sub_admin);
    if($insert_query->execute()){
     $_SESSION['show_success_member'] = true;
        header("Location: view_member.php");

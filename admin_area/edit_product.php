@@ -238,14 +238,12 @@ if(isset($_GET['edit_product'])){
               </div>
               <div class="product-name">
                 <label for="" class="form-label">Product Description</label>
-                <input
+                <textarea
                   type="text"
                   class="form-control"
                  name="product_description"
-                 value="<?php echo $product_description ?>"
                  autocomplete="off"
-
-                />
+                ><?php echo $product_description; ?></textarea>
               </div>
 
               <div class="product-name">
@@ -385,52 +383,63 @@ if(isset($_GET['edit_product'])){
 <!-- editing the products -->
 
 <?php
+
 if(isset($_POST['edit_product'])){
     $product_title = $_POST['product_title'];
     $product_desc = $_POST['product_description'];
     $product_keywords = $_POST['product_keywords'];
     $product_category = $_POST['product_category'];
     $product_brand = $_POST['product_brand'];
-    $product_image1 = $_FILES['product_image1'];
-    $product_image2 = $_FILES['product_image2'];
-    $product_image3 = $_FILES['product_image3'];
     $product_price = $_POST['product_price'];
-    // echo $product_title;
 
+    // Images
     $product_image1 = $_FILES['product_image1']['name'];
     $product_image2 = $_FILES['product_image2']['name'];
     $product_image3 = $_FILES['product_image3']['name'];
-    
-    // the temporary name of the images
+
     $temp_image1 = $_FILES['product_image1']['tmp_name'];
     $temp_image2 = $_FILES['product_image2']['tmp_name'];
     $temp_image3 = $_FILES['product_image3']['tmp_name'];
 
-    // checking for the empty fields
-    // this checking of the empty fields will not work because of the required properties given in the input fields
-    if($product_title == '' or $product_desc== '' or $product_keywords == '' or $product_category =='' or $product_brand == '' or $product_image1 == '' or $product_image2 == '' or $product_image3 == '' or $product_price == ''){
-      $_SESSION['show_field_error'] = true;
-      header("Location: edit_product.php?edit_product=$edit_id");
-      exit();
-    }else{
-        move_uploaded_file($temp_image1 , "./product_images/$product_image1");
-        move_uploaded_file($temp_image2 , "./product_images/$product_image2");
-        move_uploaded_file($temp_image3 , "./product_images/$product_image3");
+    // Basic field validation (images not included here)
+    if($product_title == '' || $product_desc== '' || $product_keywords == '' || 
+       $product_category =='' || $product_brand == '' || $product_price == ''){
+        $_SESSION['show_field_error'] = true;
+        header("Location: edit_product.php?edit_product=$edit_id");
+        exit();
+    } else {
 
-        // query to update the data
-        // $update_product = "update `products` set product_title = '$product_title', product_description = '$product_desc', product_keywords='$product_keywords', category_id = '$product_category', brand_id = '$product_brand', product_image1= '$product_image1', product_image2= '$product_image2', product_image3 = '$product_image3', product_price = '$product_price', date= NOW() where product_id = $edit_id";
+        // Upload only if new image is chosen
+        if(!empty($product_image1)){
+            move_uploaded_file($temp_image1 , "./product_images/$product_image1");
+            $con->query("UPDATE `products` SET product_image1='$product_image1' WHERE product_id=$edit_id");
+        }
+        if(!empty($product_image2)){
+            move_uploaded_file($temp_image2 , "./product_images/$product_image2");
+            $con->query("UPDATE `products` SET product_image2='$product_image2' WHERE product_id=$edit_id");
+        }
+        if(!empty($product_image3)){
+            move_uploaded_file($temp_image3 , "./product_images/$product_image3");
+            $con->query("UPDATE `products` SET product_image3='$product_image3' WHERE product_id=$edit_id");
+        }
 
-        $update_product = $con->prepare("UPDATE `products` SET product_title = ?, product_description = ?, product_keywords=?, category_id =?,  brand_id =?, product_image1=?, product_image2=?, product_image3 =?, product_price = ?, date= NOW() WHERE product_id = ? ");
-        $update_product->bind_param("sssiisssii", $product_title, $product_desc, $product_keywords, $product_category, $product_brand, $product_image1, $product_image2, $product_image3, $product_price, $edit_id);
+        // Update the rest of the product details
+        $update_product = $con->prepare("UPDATE `products` 
+            SET product_title = ?, product_description = ?, product_keywords=?, 
+                category_id =?,  brand_id =?, product_price = ?, date=NOW() 
+            WHERE product_id = ?");
+
+        $update_product->bind_param("sssiisi", 
+            $product_title, $product_desc, $product_keywords, 
+            $product_category, $product_brand, $product_price, $edit_id
+        );
 
         if($update_product->execute()){
-          $_SESSION['show_success'] = true;
-          header("Location: view_products.php");
-          exit();
-
-        }else{
-          $_SESSION['show_error'] = true;
-
+            $_SESSION['show_success'] = true;
+            header("Location: view_products.php");
+            exit();
+        } else {
+            $_SESSION['show_error'] = true;
         }
     }
 }

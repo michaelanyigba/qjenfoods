@@ -23,51 +23,89 @@ if(isset($_POST['insert_product'])){
 
   // accessing images
   $product_image1 = $_FILES['product_image1']['name'];
-  $product_image2 = $_FILES['product_image2']['name'];
-  $product_image3 = $_FILES['product_image3']['name'];
+  // $product_image2 = $_FILES['product_image2']['name'];
+  // $product_image3 = $_FILES['product_image3']['name'];
+   $product_image2 = !empty($_FILES['product_image2']['name']) ? $_FILES['product_image2']['name'] : null;
+  $product_image3 = !empty($_FILES['product_image3']['name']) ? $_FILES['product_image3']['name'] : null;
 
   // accessing images tmp name
   $temp_image1 = $_FILES['product_image1']['tmp_name'];
-  $temp_image2 = $_FILES['product_image2']['tmp_name'];
-  $temp_image3 = $_FILES['product_image3']['tmp_name'];
+  // $temp_image2 = $_FILES['product_image2']['tmp_name'];
+  // $temp_image3 = $_FILES['product_image3']['tmp_name'];
+   $temp_image2 = !empty($_FILES['product_image2']['tmp_name']) ? $_FILES['product_image2']['tmp_name'] : null;
+  $temp_image3 = !empty($_FILES['product_image3']['tmp_name']) ? $_FILES['product_image3']['tmp_name'] : null;
 
   // checking if some of the fields are empty
-  if($product_title=='' or $description=='' or $product_keywords=='' or $product_category=='' or $product_brands=='' or $product_price=='' or $product_image1=='' or $product_image2=='' or $product_image3==''){
+//   if($product_title=='' or $description=='' or $product_keywords=='' or $product_category=='' or $product_brands=='' or $product_price=='' or $product_image1=='' or $product_image2=='' or $product_image3==''){
+//     $_SESSION['show_error'] = true;
+//     header("Location: add_products.php");
+//     exit();
+//   }else{
+//       // move images to the folder
+//       move_uploaded_file($temp_image1, "./product_images/$product_image1");
+//       move_uploaded_file($temp_image2, "./product_images/$product_image2");
+//       move_uploaded_file($temp_image3, "./product_images/$product_image3");
+
+//       // insert query to the database
+//       // $insert_products = "insert into `products` (product_title, product_description, product_keywords, category_id, brand_id, product_image1, product_image2, product_image3, product_price, date) values ('$product_title','$description','$product_keywords','$product_category','$product_brands','$product_image1','$product_image2','$product_image3','$product_price',NOW())";
+
+//       $insert_products = $con->prepare("INSERT INTO `products` (product_title, product_description, product_keywords, category_id, brand_id, product_image1, product_image2, product_image3, product_price, date) VALUES (?,?,?,?,?,?,?,?,?,NOW())");
+//       $insert_products->bind_param("sssiissss",$product_title, $description, $product_keywords, $product_category, $product_brands, $product_image1, $product_image2, $product_image3, $product_price);
+//       if($insert_products->execute()){
+//         $_SESSION['show_success'] = true;
+//         header("Location: add_products.php");
+//         exit();
+//       }else{
+//         $_SESSION['show_error'] = true;
+
+//       }
+//   }
+
+// }
+
+
+  if($product_title=='' || $description=='' || $product_keywords=='' || $product_category=='' || $product_brands=='' || $product_price=='' || $product_image1==''){
     $_SESSION['show_error'] = true;
     header("Location: add_products.php");
     exit();
   }else{
-      // move images to the folder
+      // Move required image
       move_uploaded_file($temp_image1, "./product_images/$product_image1");
-      move_uploaded_file($temp_image2, "./product_images/$product_image2");
-      move_uploaded_file($temp_image3, "./product_images/$product_image3");
 
-      // insert query to the database
-      // $insert_products = "insert into `products` (product_title, product_description, product_keywords, category_id, brand_id, product_image1, product_image2, product_image3, product_price, date) values ('$product_title','$description','$product_keywords','$product_category','$product_brands','$product_image1','$product_image2','$product_image3','$product_price',NOW())";
+      // Move optional images if provided
+      if($product_image2){
+        move_uploaded_file($temp_image2, "./product_images/$product_image2");
+      }
+      if($product_image3){
+        move_uploaded_file($temp_image3, "./product_images/$product_image3");
+      }
 
-      $insert_products = $con->prepare("INSERT INTO `products` (product_title, product_description, product_keywords, category_id, brand_id, product_image1, product_image2, product_image3, product_price, date) VALUES (?,?,?,?,?,?,?,?,?,NOW())");
-      $insert_products->bind_param("sssiissss",$product_title, $description, $product_keywords, $product_category, $product_brands, $product_image1, $product_image2, $product_image3, $product_price);
+      // Insert query
+      $insert_products = $con->prepare("INSERT INTO `products` 
+      (product_title, product_description, product_keywords, category_id, brand_id, product_image1, product_image2, product_image3, product_price, date) 
+      VALUES (?,?,?,?,?,?,?,?,?,NOW())");
+
+      $insert_products->bind_param(
+        "sssiissss",
+        $product_title,
+        $description,
+        $product_keywords,
+        $product_category,
+        $product_brands,
+        $product_image1,
+        $product_image2,  // can be null
+        $product_image3,  // can be null
+        $product_price
+      );
+
       if($insert_products->execute()){
         $_SESSION['show_success'] = true;
         header("Location: add_products.php");
         exit();
       }else{
         $_SESSION['show_error'] = true;
-
       }
-
-
-
-      // $result_query = mysqli_query($con, $insert_products);
-      // if($result_query){
-      //   $_SESSION['show_success'] = true;
-      //   header("Location: add_products.php");
-      //   exit();
-      // }else{
-        
-      // }
   }
-
 }
 
 
@@ -259,12 +297,12 @@ if(isset($_POST['insert_product'])){
               </div>
               <div class="product-name">
                 <label for="" class="form-label">Product Description</label>
-                <input
+                <textarea
                   type="text"
                   class="form-control"
                  name="product_description"
                  autocomplete="off"
-                />
+                ></textarea>
               </div>
 
               <div class="product-name">

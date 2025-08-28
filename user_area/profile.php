@@ -28,7 +28,7 @@ $user_id = $user_row['user_id'];
 
 <head>
     <meta charset="utf-8">
-    <title>QJEN FOODS</title>
+    <title>Q-JEN FOODS</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free HTML Templates" name="keywords">
     <meta content="Free HTML Templates" name="description">
@@ -75,7 +75,7 @@ $user_id = $user_row['user_id'];
         <div class="row align-items-center bg-light py-3 px-xl-5 d-none d-lg-flex">
             <div class="col-lg-4">
                 <a href="" class="text-decoration-none">
-                    <span class="h1 text-uppercase text-primary bg-dark px-2">QJEN</span>
+                    <span class="h1 text-uppercase text-primary bg-dark px-2">Q-JEN</span>
                     <span class="h1 text-uppercase text-dark bg-primary px-2 ml-n1">FOODS</span>
                 </a>
             </div>
@@ -100,7 +100,7 @@ $user_id = $user_row['user_id'];
             <div class="col-lg-9">
                 <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-3 py-lg-0 px-0">
                     <a href="" class="text-decoration-none d-block d-lg-none">
-                        <span class="h1 text-uppercase text-dark bg-light px-2">QJEN</span>
+                        <span class="h1 text-uppercase text-dark bg-light px-2">Q-JEN</span>
                         <span class="h1 text-uppercase text-light bg-primary px-2 ml-n1">FOODS</span>
                     </a>
                     <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
@@ -110,12 +110,12 @@ $user_id = $user_row['user_id'];
                         <div class="navbar-nav mr-auto py-0">
                             <a href="../index.php" class="nav-item nav-link">Home</a>
                             <a href="shop.php" class="nav-item nav-link">Shop</a>
-                            <div class="nav-item dropdown">
+                            <!-- <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages <i class="fa fa-angle-down mt-1"></i></a>
                                 <div class="dropdown-menu bg-primary rounded-0 border-0 m-0">
                                     <a href="cart.php" class="dropdown-item">Shopping Cart</a>
                                 </div>
-                            </div>
+                            </div> -->
                             <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                     </div>
@@ -243,6 +243,7 @@ $user_id = $user_row['user_id'];
                             <table class="table table-responsive">
 
                             <?php
+                            $number=0;
                             $order_query = $con->prepare("SELECT * FROM user_orders WHERE user_id = ? ORDER BY order_date DESC");
                             $order_query->bind_param("i", $user_id);
                             $order_query->execute();
@@ -254,7 +255,7 @@ $user_id = $user_row['user_id'];
                              }else{
                                 echo "<thead>
                                     <tr class='text-center'>
-                                    <th scope='col'>Id</th>
+                                    <th scope='col'>Number</th>
                                     <th scope='col'>Products</th>
                                     <th scope='col'>Price</th>
                                     <th scope='col'>Date</th>
@@ -269,8 +270,9 @@ $user_id = $user_row['user_id'];
                                 $total_products = $order_row['total_products'];
                                 $order_date = $order_row['order_date'];
                                 $order_id = $order_row['order_id'];
+                                $number ++;
                                 echo "<tr>
-                            <th scope='row' class='text-center'><span>#</span>$order_id</th>
+                            <th scope='row' class='text-center'><span></span>$number</th>
                             <td class='text-center'>$total_products</td>
                             <td class='text-center'><i class='fas fa-cedi-sign'></i>$total_price</td>
                             <td class='text-center date-text'>$order_date</td>

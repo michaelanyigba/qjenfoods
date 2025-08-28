@@ -19,8 +19,8 @@ function get_products(){
      $brand_id = $row['brand_id'];
      echo "<div class='col-lg-3 col-md-4 col-sm-6 pb-1'>
                 <div class='product-item bg-light mb-4'>
-                    <div class='product-img position-relative overflow-hidden'>
-                        <img class='img-fluid w-80' src='./admin_area/product_images/$product_image1' alt=''>
+                    <div class='product-img position-relative overflow-hidden' style='width:100%; height:250px;'>
+                        <img class='img-fluid  w-100 h-100 ' src='./admin_area/product_images/$product_image1' alt=''>
                         <div class='product-action'>
                             <a class='btn btn-outline-dark btn-square' href='index.php?add_to_cart=$product_id'><i class='fa fa-shopping-cart'></i></a>
                             <a class='btn btn-outline-dark btn-square' href='./user_area/detail.php?product_id=$product_id'><i class='fa fa-info-circle'></i></a>
@@ -52,9 +52,9 @@ function get_related_products(){
             $product_title = $result_row['product_title'];
             $product_price = $result_row['product_price'];
             $product_image = $result_row['product_image1'];
-            echo " <div class='product-item bg-light'>
-                        <div class='product-img position-relative overflow-hidden'>
-                            <img class='img-fluid w-60' src='../admin_area/product_images/$product_image' alt=''>
+            echo " <div class='product-item bg-light '>
+                        <div class='product-img position-relative overflow-hidden'  style='width: 100%; height: 250px; display: flex; justify-content: center; align-items: center;''>
+                            <img class='img-fluid' src='../admin_area/product_images/$product_image' alt='image'  style='width: 100%; height: 100%; object-fit: contain;'>
                             <div class='product-action'>
                               <a class='btn btn-outline-dark btn-square' href='shop.php?add_to_cart_for_user=$product_id'><i class='fa fa-shopping-cart'></i></a>
                             </div>
@@ -117,42 +117,74 @@ function product_details(){
      $category_row = mysqli_fetch_array($category_result);
      $category_title = $category_row['category_title'];
      $brand_id = $row['brand_id'];
-     echo "<div class='row px-xl-5 d-flex justify-content-center'>
-            <div class='col-lg-4 mb-30'>
-                <div id='product-carousel' class='carousel slide' data-ride='carousel'>
-                    <div class='carousel-inner bg-light'>
-                        <div class='carousel-item active'>
-                            <img class='w-100 h-80' src='../admin_area/product_images/$product_image1' alt='Image'>
-                        </div>
-                        <div class='carousel-item'>
-                            <img class='w-100 h-80' src='../admin_area/product_images/$product_image2' alt='Image'>
-                        </div>
-                        <div class='carousel-item'>
-                            <img class='w-100 h-80' src='../admin_area/product_images/$product_image3' alt='Image'>
-                        </div>
-                    </div>
-                    <a class='carousel-control-prev' href='#product-carousel' data-slide='prev'>
-                        <i class='fa fa-2x fa-angle-left text-dark'></i>
-                    </a>
-                    <a class='carousel-control-next' href='#product-carousel' data-slide='next'>
-                        <i class='fa fa-2x fa-angle-right text-dark'></i>
-                    </a>
-                </div>
-            </div>
-            <div class='col-lg-7 h-auto mb-30'>
-                <div class='h-100 bg-light p-30'>
-                    <p><span class='text-dark'>Name:</span> $product_title</p>
-                    <p class='mb-4'><span class='text-dark'>Description:</span> $product_description</p>
-                    <p class='mb-4'><span class='text-dark'>Category:</span> $category_title</p>
-                    <p class='font-weight-semi-bold mb-4'><span class='text-dark'>Price: </span><i class='fas fa-cedi-sign'></i>$product_price</p>
+     echo "
+<div class='row px-xl-3 d-flex justify-content-center'>
+    <div class='col-lg-4 mb-30'>
+        <div id='product-carousel' class='carousel slide' data-ride='carousel'>
+            <div class='carousel-inner bg-light' style='width:100%; height:500px;'>
+";
 
-                    <div class='d-flex align-items-center mb-4 pt-2'>
-                        <a href='detail.php?add_to_cart_for_user=$product_id' class='btn btn-primary px-3'><i class='fa fa-shopping-cart mr-1'></i> Add To
-                            Cart</a>
-                    </div>
-                </div>
+// Image 1 (always required)
+echo "
+    <div class='carousel-item active'>
+        <img class='w-100 h-100' src='../admin_area/product_images/$product_image1' alt='Image' style='object-fit: contain;'>
+    </div>
+";
+
+// Image 2 (only if not empty)
+if (!empty($product_image2)) {
+    echo "
+    <div class='carousel-item'>
+        <img class='w-100 h-100' src='../admin_area/product_images/$product_image2' alt='Image' style='object-fit: contain;'>
+    </div>
+    ";
+}
+
+// Image 3 (only if not empty)
+if (!empty($product_image3)) {
+    echo "
+    <div class='carousel-item'>
+        <img class='w-100 h-100' src='../admin_area/product_images/$product_image3' alt='Image' style='object-fit: contain;'>
+    </div>
+    ";
+}
+
+echo "
             </div>
-        </div>";
+";
+
+// Show carousel controls **only if more than 1 image exists**
+if (!empty($product_image2) || !empty($product_image3)) {
+    echo "
+            <a class='carousel-control-prev' href='#product-carousel' data-slide='prev'>
+                <i class='fa fa-2x fa-angle-left text-dark'></i>
+            </a>
+            <a class='carousel-control-next' href='#product-carousel' data-slide='next'>
+                <i class='fa fa-2x fa-angle-right text-dark'></i>
+            </a>
+    ";
+}
+
+echo "
+        </div>
+    </div>
+    <div class='col-lg-7 mb-30'>
+        <div class='bg-light p-30'>
+            <p><span class='text-dark'>Name:</span> $product_title</p>
+            <p class='mb-4' style='white-space: pre-line;'><span class='text-dark'>Description:</span> $product_description</p>
+            <p class='mb-4'><span class='text-dark'>Category:</span> $category_title</p>
+            <p class='font-weight-semi-bold mb-4'><span class='text-dark'>Price: </span><i class='fas fa-cedi-sign'></i>$product_price</p>
+
+            <div class='d-flex align-items-center mb-4 pt-2'>
+                <a href='detail.php?add_to_cart_for_user=$product_id' class='btn btn-primary px-3'>
+                    <i class='fa fa-shopping-cart mr-1'></i> Add To Cart
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+";
+
   
     }
   }
@@ -176,8 +208,8 @@ function get_all_products(){
      $brand_id = $row['brand_id'];
      echo "<div class='col-lg-3 col-md-4 col-sm-6 pb-1'>
                         <div class='product-item bg-light mb-4'>
-                            <div class='product-img position-relative overflow-hidden'>
-                                <img class='img-fluid w-80' src='../admin_area/product_images/$product_image1' alt=''>
+                            <div class='product-img position-relative overflow-hidden' style='width:100%; height:250px;'>
+                                <img class='img-fluid w-100 h-100' src='../admin_area/product_images/$product_image1' alt=''>
                                 <div class='product-action'>
                                     <a class='btn btn-outline-dark btn-square' href='shop.php?add_to_cart_for_user=$product_id'><i class='fa fa-shopping-cart'></i></a>
                                     <a class='btn btn-outline-dark btn-square' href='detail.php?product_id=$product_id'><i class='fa fa-info-circle'></i></a>
@@ -261,8 +293,8 @@ function search_product_for_index(){
      $brand_id = $row['brand_id'];
      echo "<div class='col-lg-3 col-md-4 col-sm-6 pb-1'>
                         <div class='product-item bg-light mb-4'>
-                            <div class='product-img position-relative overflow-hidden'>
-                                <img class='img-fluid w-100' src='../admin_area/product_images/$product_image1' alt=''>
+                            <div class='product-img position-relative overflow-hidden' style='width:100%; height:250px;'>
+                                <img class='img-fluid w-100 h-100' src='../admin_area/product_images/$product_image1' alt=''>
                                 <div class='product-action'>
                                     <a class='btn btn-outline-dark btn-square' href='shop.php?add_to_cart_for_user=$product_id'><i class='fa fa-shopping-cart'></i></a>
                                     <a class='btn btn-outline-dark btn-square' href='detail.php?product_id=$product_id'><i class='fa fa-info-circle'></i></a>

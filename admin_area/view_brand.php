@@ -262,9 +262,10 @@ $username = $_SESSION['username'];
                       <td><?php echo $brand_title ?></td>
                       <?php
                         if($_SESSION['role']==="admin"){
-                          echo "<td><a onclick='confirmDelete($brand_id)'><i class='fa fa-trash-o trash' aria-hidden='true'>
+                          echo "<td><a href='edit_brand.php?edit_brand=$brand_id'><i class='fa fa-pencil pencil'></i></a></td>
+                          <td><a onclick='confirmDelete($brand_id)'><i class='fa fa-trash-o trash' aria-hidden='true'>
                           </i></a></td>
-                          <td><a href='edit_brand.php?edit_brand=$brand_id'><i class='fa fa-pencil pencil'></i></a></td>";
+                          ";
                         }
                         ?>
                       </tr>

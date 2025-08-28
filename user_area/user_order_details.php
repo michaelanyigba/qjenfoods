@@ -15,6 +15,21 @@ if(!isset($_SESSION['username']) || $_SESSION['role'] !== "user"){
 if(isset($_GET['order_id'])){
   $order_id = $_GET['order_id'];
 }
+if(isset($_SESSION['username'])){
+  $session_username = $_SESSION['username'];
+
+  // fetching user from the database
+  $session_user = $con->prepare("SELECT * FROM users WHERE username = ?");
+  $session_user->bind_param("s", $session_username);
+  $session_user->execute();
+  $session_user_result = $session_user->get_result();
+  $session_user_row = $session_user_result->fetch_assoc();
+  $session_user_id = $session_user_row['user_id'];
+
+}
+
+
+// query for cancelling order
 
 if(isset($_POST['submit_cancel'])){
   $cancel_input = $_POST['cancel_input'];
@@ -24,8 +39,8 @@ if(isset($_POST['submit_cancel'])){
 
 
   }else{
-    $cancel_query_stmt = $con->prepare("UPDATE user_orders set cancel_reason_user=? where order_id = ?");
-    $cancel_query_stmt->bind_param("si", $cancel_input, $order_id);
+    $cancel_query_stmt = $con->prepare("UPDATE user_orders set cancel_reason_user=?, cancel_user_id = ? where order_id = ?");
+    $cancel_query_stmt->bind_param("sii", $cancel_input, $session_user_id, $order_id);
     
     if($cancel_query_stmt->execute()){
       $cancel_status_query = $con->prepare("UPDATE user_orders set status= ? where order_id = ?");
@@ -50,7 +65,7 @@ if(isset($_POST['submit_cancel'])){
 
 <head>
     <meta charset="utf-8">
-    <title>QJEN FOODS</title>
+    <title>Q-JEN FOODS</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free HTML Templates" name="keywords">
     <meta content="Free HTML Templates" name="description">
@@ -92,7 +107,7 @@ if(isset($_POST['submit_cancel'])){
         <div class="row align-items-center bg-light py-3 px-xl-5 d-none d-lg-flex">
             <div class="col-lg-4">
                 <a href="" class="text-decoration-none">
-                    <span class="h1 text-uppercase text-primary bg-dark px-2">QJEN</span>
+                    <span class="h1 text-uppercase text-primary bg-dark px-2">Q-JEN</span>
                     <span class="h1 text-uppercase text-dark bg-primary px-2 ml-n1">FOODS</span>
                 </a>
             </div>
@@ -117,7 +132,7 @@ if(isset($_POST['submit_cancel'])){
             <div class="col-lg-9">
                 <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-3 py-lg-0 px-0">
                     <a href="" class="text-decoration-none d-block d-lg-none">
-                        <span class="h1 text-uppercase text-dark bg-light px-2">QJEN</span>
+                        <span class="h1 text-uppercase text-dark bg-light px-2">Q-JEN</span>
                         <span class="h1 text-uppercase text-light bg-primary px-2 ml-n1">FOODS</span>
                     </a>
                     <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
@@ -127,12 +142,12 @@ if(isset($_POST['submit_cancel'])){
                         <div class="navbar-nav mr-auto py-0">
                             <a href="../index.php" class="nav-item nav-link">Home</a>
                             <a href="shop.php" class="nav-item nav-link">Shop</a>
-                            <div class="nav-item dropdown">
+                            <!-- <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages <i class="fa fa-angle-down mt-1"></i></a>
                                 <div class="dropdown-menu bg-primary rounded-0 border-0 m-0">
                                     <a href="cart.php" class="dropdown-item">Shopping Cart</a>
                                 </div>
-                            </div>
+                            </div> -->
                             <a href="contact.php" class="nav-item nav-link">Contact</a>
                         </div>
                     </div>
@@ -256,7 +271,7 @@ if(isset($_POST['submit_cancel'])){
               }
               ?>
               <?php
-              if($status !=="Cancelled" && $status !=="Delivered" ){
+              if($status !=="Cancelled" && $status !=="Delivered" && $status !=="Processing" ){
                 echo "<div class='user_cancel_div' id='user_cancel_div'>
                 <div class=''>Cancel Order: </div>
                 <button onclick='showCancelInput()'><a>Cancel</a></button>
